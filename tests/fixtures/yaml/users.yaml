@@ -1,0 +1,52 @@
+folder: Users
+requests:
+  - name: List Users
+    method: GET
+    uri: /api/users
+    description: Get all users
+    responses:
+      - name: Success
+        status: 200
+        body:
+          success: true
+          data:
+            - id: 1
+              name: John Doe
+            - id: 2
+              name: Jane Doe
+
+  - name: Create User
+    method: POST
+    uri: /api/users
+    description: Create a new user
+    body:
+      name: John Doe
+      email: john@example.com
+    auth:
+      type: bearer
+    responses:
+      - name: Created
+        status: 201
+        body:
+          success: true
+          data:
+            id: 1
+            name: John Doe
+
+  - name: Get User
+    method: GET
+    uri: /api/users/{id}
+    description: Get user by ID
+    responses:
+      - name: Success
+        status: 200
+        body:
+          success: true
+          data:
+            id: 1
+            name: John Doe
+      - name: Not Found
+        status: 404
+        body:
+          success: false
+          message: User not found

@@ -1,0 +1,9 @@
+# Exclude files from export (reduces package size)
+/tests export-ignore
+/docs export-ignore
+/examples export-ignore
+/.github export-ignore
+.gitattributes export-ignore
+.gitignore export-ignore
+phpunit.xml export-ignore
+pint.json export-ignore
