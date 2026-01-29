@@ -131,11 +131,11 @@ return [
         /*
         | Directory for Postman collection output
         */
-        'postman_path' => storage_path('app/collections'),
+        'postman_path' => base_path('docs/postman'),
 
         /*
         | Directory for OpenAPI specification output
         */
-        'openapi_path' => storage_path('app/openapi'),
+        'openapi_path' => base_path('docs/openapi'),
     ],
 ];
