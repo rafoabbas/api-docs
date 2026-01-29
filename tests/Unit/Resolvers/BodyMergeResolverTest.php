@@ -26,7 +26,7 @@ class MergeTestController
     public function noRequest(): void {}
 }
 
-it('returns null for GET requests', function () {
+it('returns null for GET requests', function (): void {
     $resolver = new BodyMergeResolver;
     $method = new ReflectionMethod(MergeTestController::class, 'store');
 
@@ -35,7 +35,7 @@ it('returns null for GET requests', function () {
     expect($body)->toBeNull();
 });
 
-it('returns null for DELETE requests', function () {
+it('returns null for DELETE requests', function (): void {
     $resolver = new BodyMergeResolver;
     $method = new ReflectionMethod(MergeTestController::class, 'store');
 
@@ -44,7 +44,7 @@ it('returns null for DELETE requests', function () {
     expect($body)->toBeNull();
 });
 
-it('resolves body for POST requests', function () {
+it('resolves body for POST requests', function (): void {
     $resolver = new BodyMergeResolver;
     $method = new ReflectionMethod(MergeTestController::class, 'store');
 
@@ -55,7 +55,7 @@ it('resolves body for POST requests', function () {
     expect($body)->toHaveKey('email');
 });
 
-it('resolves body for PUT requests', function () {
+it('resolves body for PUT requests', function (): void {
     $resolver = new BodyMergeResolver;
     $method = new ReflectionMethod(MergeTestController::class, 'store');
 
@@ -64,7 +64,7 @@ it('resolves body for PUT requests', function () {
     expect($body)->toBeArray();
 });
 
-it('resolves body for PATCH requests', function () {
+it('resolves body for PATCH requests', function (): void {
     $resolver = new BodyMergeResolver;
     $method = new ReflectionMethod(MergeTestController::class, 'store');
 
@@ -73,13 +73,13 @@ it('resolves body for PATCH requests', function () {
     expect($body)->toBeArray();
 });
 
-it('uses only ApiBody data when merge is false', function () {
+it('uses only ApiBody data when merge is false', function (): void {
     $resolver = new BodyMergeResolver;
     $method = new ReflectionMethod(MergeTestController::class, 'store');
 
     $apiBody = new ApiBody(
         data: ['custom_field' => 'custom_value'],
-        merge: false
+        merge: false,
     );
 
     $body = $resolver->resolve($method, $apiBody, 'POST');
@@ -89,13 +89,13 @@ it('uses only ApiBody data when merge is false', function () {
     expect($body)->not->toHaveKey('email');
 });
 
-it('merges ApiBody with FormRequest when merge is true', function () {
+it('merges ApiBody with FormRequest when merge is true', function (): void {
     $resolver = new BodyMergeResolver;
     $method = new ReflectionMethod(MergeTestController::class, 'store');
 
     $apiBody = new ApiBody(
         data: ['custom_field' => 'custom_value'],
-        merge: true
+        merge: true,
     );
 
     $body = $resolver->resolve($method, $apiBody, 'POST');
@@ -107,13 +107,13 @@ it('merges ApiBody with FormRequest when merge is true', function () {
     expect($body['custom_field'])->toBe('custom_value');
 });
 
-it('ApiBody data overrides FormRequest fields when merging', function () {
+it('ApiBody data overrides FormRequest fields when merging', function (): void {
     $resolver = new BodyMergeResolver;
     $method = new ReflectionMethod(MergeTestController::class, 'store');
 
     $apiBody = new ApiBody(
         data: ['email' => 'override@example.com'],
-        merge: true
+        merge: true,
     );
 
     $body = $resolver->resolve($method, $apiBody, 'POST');
@@ -121,14 +121,14 @@ it('ApiBody data overrides FormRequest fields when merging', function () {
     expect($body['email'])->toBe('override@example.com');
 });
 
-it('applies except filter when merging', function () {
+it('applies except filter when merging', function (): void {
     $resolver = new BodyMergeResolver;
     $method = new ReflectionMethod(MergeTestController::class, 'store');
 
     $apiBody = new ApiBody(
         data: ['custom' => 'value'],
         merge: true,
-        except: ['phone']
+        except: ['phone'],
     );
 
     $body = $resolver->resolve($method, $apiBody, 'POST');
@@ -139,14 +139,14 @@ it('applies except filter when merging', function () {
     expect($body)->toHaveKey('custom');
 });
 
-it('applies multiple except filters', function () {
+it('applies multiple except filters', function (): void {
     $resolver = new BodyMergeResolver;
     $method = new ReflectionMethod(MergeTestController::class, 'store');
 
     $apiBody = new ApiBody(
         data: [],
         merge: true,
-        except: ['name', 'phone']
+        except: ['name', 'phone'],
     );
 
     $body = $resolver->resolve($method, $apiBody, 'POST');
@@ -156,7 +156,7 @@ it('applies multiple except filters', function () {
     expect($body)->toHaveKey('email');
 });
 
-it('returns empty array when ApiBody has no data and merge is false', function () {
+it('returns empty array when ApiBody has no data and merge is false', function (): void {
     $resolver = new BodyMergeResolver;
     $method = new ReflectionMethod(MergeTestController::class, 'store');
 
@@ -167,13 +167,13 @@ it('returns empty array when ApiBody has no data and merge is false', function (
     expect($body)->toBe([]);
 });
 
-it('handles method without FormRequest when merge is true', function () {
+it('handles method without FormRequest when merge is true', function (): void {
     $resolver = new BodyMergeResolver;
     $method = new ReflectionMethod(MergeTestController::class, 'noRequest');
 
     $apiBody = new ApiBody(
         data: ['custom' => 'value'],
-        merge: true
+        merge: true,
     );
 
     $body = $resolver->resolve($method, $apiBody, 'POST');

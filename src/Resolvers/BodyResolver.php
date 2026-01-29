@@ -110,6 +110,7 @@ final class BodyResolver
         }
 
         $source = file_get_contents($filename);
+
         if ($source === false) {
             return [];
         }
@@ -126,6 +127,7 @@ final class BodyResolver
         }
 
         $body = [];
+
         foreach ($matches[1] as $field) {
             // Skip wildcard fields
             if (Str::contains($field, '*')) {
@@ -164,7 +166,7 @@ final class BodyResolver
     private function generateExampleValue(string $field, mixed $rules): mixed
     {
         $rulesArray = $this->normalizeRules($rules);
-        $rulesString = implode('|', array_map(fn ($r) => is_string($r) ? $r : '', $rulesArray));
+        $rulesString = implode('|', array_map(fn ($r): string => is_string($r) ? $r : '', $rulesArray));
 
         // Check for array type
         if (in_array('array', $rulesArray)) {

@@ -12,8 +12,6 @@ use Illuminate\Support\Str;
 
 final class CollectionGenerator
 {
-    private string $collectionName;
-
     private string $baseUrl = '{{API_URL}}';
 
     private string $baseUrlV1 = '{{API_URL_V1}}';
@@ -27,10 +25,7 @@ final class CollectionGenerator
         'Content-Type' => 'application/json',
     ];
 
-    public function __construct(string $collectionName)
-    {
-        $this->collectionName = $collectionName;
-    }
+    public function __construct(private readonly string $collectionName) {}
 
     public function setBaseUrl(string $baseUrl): self
     {
@@ -129,7 +124,7 @@ final class CollectionGenerator
 
         // Sort items within each folder by order
         foreach ($grouped as $folder => $items) {
-            usort($items, fn (RequestData $a, RequestData $b) => $a->order <=> $b->order);
+            usort($items, fn (RequestData $a, RequestData $b): int => $a->order <=> $b->order);
             $grouped[$folder] = $items;
         }
 
@@ -140,8 +135,8 @@ final class CollectionGenerator
 
         foreach ($grouped as $folderName => $folderRequests) {
             $folderItems = array_map(
-                fn (RequestData $request) => $this->buildRequestItem($request),
-                $folderRequests
+                $this->buildRequestItem(...),
+                $folderRequests,
             );
 
             // Handle nested folders (e.g., "Auth / OTP")
@@ -157,7 +152,7 @@ final class CollectionGenerator
      */
     private function buildFolderStructure(string $folderPath, array $items): array
     {
-        $parts = array_map('trim', explode('/', $folderPath));
+        $parts = array_map(trim(...), explode('/', $folderPath));
 
         if (count($parts) === 1) {
             return [
@@ -208,6 +203,7 @@ final class CollectionGenerator
         if (! isset($structure[$name])) {
             // Convert item array to associative for consistent merging
             $structure[$name] = $folder;
+
             if (isset($structure[$name]['item'])) {
                 $structure[$name]['item'] = $this->convertToAssociativeArray($structure[$name]['item']);
             }
@@ -223,7 +219,7 @@ final class CollectionGenerator
                     $this->mergeIntoStructure($structure[$name]['item'], $item);
                 } else {
                     // It's a request - use a unique key to avoid duplicates
-                    $requestKey = 'request_'.($item['name'] ?? uniqid());
+                    $requestKey = 'request_' . ($item['name'] ?? uniqid());
                     $structure[$name]['item'][$requestKey] = $item;
                 }
             }
@@ -247,7 +243,7 @@ final class CollectionGenerator
                 $result[$item['name']]['item'] = $this->convertToAssociativeArray($item['item']);
             } else {
                 // It's a request
-                $key = 'request_'.($item['name'] ?? uniqid());
+                $key = 'request_' . ($item['name'] ?? uniqid());
                 $result[$key] = $item;
             }
         }
@@ -294,16 +290,18 @@ final class CollectionGenerator
             $item['request']['description'] = $request->description;
         }
 
-        if ($request->auth !== null) {
+        if ($request->auth instanceof \ApiDocs\Data\AuthData) {
             $item['request']['auth'] = $this->buildAuth($request->auth);
         }
 
         $body = $this->buildBody($request);
+
         if ($body !== null) {
             $item['request']['body'] = $body;
         }
 
         $events = $this->buildEvents($request);
+
         if (count($events) > 0) {
             $item['event'] = $events;
         }
@@ -352,7 +350,7 @@ final class CollectionGenerator
 
     private function requiresAuth(RequestData $request): bool
     {
-        if ($request->auth !== null) {
+        if ($request->auth instanceof \ApiDocs\Data\AuthData) {
             return $request->auth->type !== 'noauth';
         }
 
@@ -371,7 +369,7 @@ final class CollectionGenerator
                 if (Str::startsWith($segment, '{') && Str::endsWith($segment, '}')) {
                     $paramName = trim($segment, '{}?');
 
-                    return ':'.$paramName;
+                    return ':' . $paramName;
                 }
 
                 return $segment;
@@ -379,6 +377,7 @@ final class CollectionGenerator
             ->toArray();
 
         $variables = [];
+
         foreach ($path as $segment) {
             if (Str::startsWith($segment, ':')) {
                 $variables[] = [
@@ -391,15 +390,16 @@ final class CollectionGenerator
 
         // Use API_URL_V1 if path starts with v1
         $baseUrl = $this->baseUrl;
+
         if (count($path) > 0 && $path[0] === 'v1') {
             $baseUrl = $this->baseUrlV1;
             array_shift($path);
         }
 
-        $rawPath = count($path) > 0 ? '/'.implode('/', $path) : '';
+        $rawPath = count($path) > 0 ? '/' . implode('/', $path) : '';
 
         $url = [
-            'raw' => $baseUrl.$rawPath,
+            'raw' => $baseUrl . $rawPath,
             'host' => [$baseUrl],
             'path' => $path,
         ];
@@ -411,13 +411,13 @@ final class CollectionGenerator
         // Add query params
         if (count($request->queryParams) > 0) {
             $url['query'] = array_map(
-                fn (QueryParamData $param) => [
+                fn (QueryParamData $param): array => [
                     'key' => $param->key,
                     'value' => $param->value,
                     'description' => $param->description,
                     'disabled' => $param->disabled,
                 ],
-                $request->queryParams
+                $request->queryParams,
             );
         }
 
@@ -451,13 +451,13 @@ final class CollectionGenerator
             return [
                 'mode' => 'formdata',
                 'formdata' => array_map(
-                    fn (string $key, mixed $value) => [
+                    fn (string $key, mixed $value): array => [
                         'key' => $key,
                         'value' => is_array($value) ? json_encode($value) : (string) $value,
                         'type' => 'text',
                     ],
                     array_keys($body),
-                    array_values($body)
+                    array_values($body),
                 ),
             ];
         }
@@ -466,13 +466,13 @@ final class CollectionGenerator
             return [
                 'mode' => 'urlencoded',
                 'urlencoded' => array_map(
-                    fn (string $key, mixed $value) => [
+                    fn (string $key, mixed $value): array => [
                         'key' => $key,
                         'value' => is_array($value) ? json_encode($value) : (string) $value,
                         'type' => 'text',
                     ],
                     array_keys($body),
-                    array_values($body)
+                    array_values($body),
                 ),
             ];
         }
@@ -522,7 +522,7 @@ final class CollectionGenerator
     private function buildResponses(RequestData $request): array
     {
         return array_map(
-            fn (ResponseData $response) => [
+            fn (ResponseData $response): array => [
                 'name' => $response->name,
                 'originalRequest' => [
                     'method' => $request->method,
@@ -532,13 +532,13 @@ final class CollectionGenerator
                 'code' => $response->status,
                 '_postman_previewlanguage' => 'json',
                 'header' => array_map(
-                    fn (string $key, string $value) => ['key' => $key, 'value' => $value],
+                    fn (string $key, string $value): array => ['key' => $key, 'value' => $value],
                     array_keys($response->headers),
-                    array_values($response->headers)
+                    array_values($response->headers),
                 ),
                 'body' => json_encode($response->body, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES),
             ],
-            $request->responses
+            $request->responses,
         );
     }
 
@@ -562,6 +562,7 @@ final class CollectionGenerator
 
         // Test scripts
         $testScripts = $this->buildTestScripts($request);
+
         if (count($testScripts) > 0) {
             $events[] = [
                 'listen' => 'test',
@@ -596,11 +597,11 @@ final class CollectionGenerator
 
         // Add variable extraction scripts
         foreach ($request->variables as $variable) {
-            $scripts[] = '// Extract '.$variable->name.' from response';
+            $scripts[] = '// Extract ' . $variable->name . ' from response';
             $scripts[] = 'var jsonData = pm.response.json();';
 
             $pathParts = explode('.', $variable->path);
-            $accessPath = 'jsonData'.implode('', array_map(fn ($p) => is_numeric($p) ? "[{$p}]" : ".{$p}", $pathParts));
+            $accessPath = 'jsonData' . implode('', array_map(fn ($p): string => is_numeric($p) ? "[{$p}]" : ".{$p}", $pathParts));
 
             $scripts[] = "if ({$accessPath}) {";
 

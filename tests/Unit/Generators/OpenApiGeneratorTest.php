@@ -8,7 +8,7 @@ use ApiDocs\Data\RequestData;
 use ApiDocs\Data\ResponseData;
 use ApiDocs\Generators\OpenApiGenerator;
 
-it('generates valid openapi structure', function () {
+it('generates valid openapi structure', function (): void {
     $requests = [
         new RequestData(name: 'Get Users', method: 'GET', uri: 'api/users', folder: 'Users'),
     ];
@@ -24,7 +24,7 @@ it('generates valid openapi structure', function () {
     expect($spec)->toHaveKey('paths');
 });
 
-it('sets api info correctly', function () {
+it('sets api info correctly', function (): void {
     $requests = [
         new RequestData(name: 'Test', method: 'GET', uri: 'api/test', folder: 'Test'),
     ];
@@ -41,7 +41,7 @@ it('sets api info correctly', function () {
     expect($spec['info']['description'])->toBe('API Description');
 });
 
-it('generates paths with correct http methods', function () {
+it('generates paths with correct http methods', function (): void {
     $requests = [
         new RequestData(name: 'Get', method: 'GET', uri: 'api/users/{id}', folder: 'Users'),
         new RequestData(name: 'Update', method: 'PUT', uri: 'api/users/{id}', folder: 'Users'),
@@ -57,7 +57,7 @@ it('generates paths with correct http methods', function () {
     expect($spec['paths']['/api/users/{id}'])->toHaveKey('delete');
 });
 
-it('extracts path parameters', function () {
+it('extracts path parameters', function (): void {
     $requests = [
         new RequestData(name: 'Get User', method: 'GET', uri: 'api/users/{id}', folder: 'Users'),
     ];
@@ -73,7 +73,7 @@ it('extracts path parameters', function () {
     expect($operation['parameters'][0]['required'])->toBeTrue();
 });
 
-it('includes query parameters', function () {
+it('includes query parameters', function (): void {
     $requests = [
         new RequestData(
             name: 'Search',
@@ -83,7 +83,7 @@ it('includes query parameters', function () {
             queryParams: [
                 new QueryParamData(key: 'q', value: 'term', description: 'Search query'),
                 new QueryParamData(key: 'page', value: '1'),
-            ]
+            ],
         ),
     ];
 
@@ -98,14 +98,14 @@ it('includes query parameters', function () {
     expect($params[0]['example'])->toBe('term');
 });
 
-it('generates request body for post/put/patch', function () {
+it('generates request body for post/put/patch', function (): void {
     $requests = [
         new RequestData(
             name: 'Create User',
             method: 'POST',
             uri: 'api/users',
             folder: 'Users',
-            body: ['name' => 'John', 'email' => 'john@example.com']
+            body: ['name' => 'John', 'email' => 'john@example.com'],
         ),
     ];
 
@@ -119,7 +119,7 @@ it('generates request body for post/put/patch', function () {
     expect($operation['requestBody']['content'])->toHaveKey('application/json');
 });
 
-it('generates responses from response data', function () {
+it('generates responses from response data', function (): void {
     $requests = [
         new RequestData(
             name: 'Get User',
@@ -129,7 +129,7 @@ it('generates responses from response data', function () {
             responses: [
                 new ResponseData('Success', 200, ['id' => 1, 'name' => 'John']),
                 new ResponseData('Not Found', 404, ['error' => 'User not found']),
-            ]
+            ],
         ),
     ];
 
@@ -144,14 +144,14 @@ it('generates responses from response data', function () {
     expect($responses['404']['description'])->toBe('Not Found');
 });
 
-it('adds security schemes for authenticated requests', function () {
+it('adds security schemes for authenticated requests', function (): void {
     $requests = [
         new RequestData(
             name: 'Protected',
             method: 'GET',
             uri: 'api/protected',
             folder: 'Auth',
-            auth: new AuthData(type: 'bearer')
+            auth: new AuthData(type: 'bearer'),
         ),
     ];
 
@@ -162,14 +162,14 @@ it('adds security schemes for authenticated requests', function () {
     expect($spec['components']['securitySchemes'])->toHaveKey('bearerAuth');
 });
 
-it('adds security requirement to authenticated endpoints', function () {
+it('adds security requirement to authenticated endpoints', function (): void {
     $requests = [
         new RequestData(
             name: 'Protected',
             method: 'GET',
             uri: 'api/protected',
             folder: 'Auth',
-            middleware: ['auth:sanctum']
+            middleware: ['auth:sanctum'],
         ),
     ];
 
@@ -180,14 +180,14 @@ it('adds security requirement to authenticated endpoints', function () {
     expect($operation)->toHaveKey('security');
 });
 
-it('handles noauth correctly', function () {
+it('handles noauth correctly', function (): void {
     $requests = [
         new RequestData(
             name: 'Public',
             method: 'GET',
             uri: 'api/public',
             folder: 'Public',
-            auth: new AuthData(type: 'noauth')
+            auth: new AuthData(type: 'noauth'),
         ),
     ];
 
@@ -198,7 +198,7 @@ it('handles noauth correctly', function () {
     expect($operation)->not->toHaveKey('security');
 });
 
-it('extracts tags from folder names', function () {
+it('extracts tags from folder names', function (): void {
     $requests = [
         new RequestData(name: 'R1', method: 'GET', uri: 'api/users', folder: 'Users / List'),
         new RequestData(name: 'R2', method: 'GET', uri: 'api/products', folder: 'Products'),
@@ -215,7 +215,7 @@ it('extracts tags from folder names', function () {
     expect(count(array_unique($tagNames)))->toBe(count($tagNames)); // No duplicates
 });
 
-it('generates yaml output', function () {
+it('generates yaml output', function (): void {
     $requests = [
         new RequestData(name: 'Test', method: 'GET', uri: 'api/test', folder: 'Test'),
     ];
@@ -227,7 +227,7 @@ it('generates yaml output', function () {
     expect($yaml)->toContain('paths:');
 });
 
-it('generates json output', function () {
+it('generates json output', function (): void {
     $requests = [
         new RequestData(name: 'Test', method: 'GET', uri: 'api/test', folder: 'Test'),
     ];
@@ -240,7 +240,7 @@ it('generates json output', function () {
     expect($decoded['openapi'])->toBe('3.0.3');
 });
 
-it('configures servers', function () {
+it('configures servers', function (): void {
     $requests = [
         new RequestData(name: 'Test', method: 'GET', uri: 'api/test', folder: 'Test'),
     ];
@@ -256,7 +256,7 @@ it('configures servers', function () {
     expect($spec['servers'][0]['description'])->toBe('Production');
 });
 
-it('infers schema types from body data', function () {
+it('infers schema types from body data', function (): void {
     $requests = [
         new RequestData(
             name: 'Create',
@@ -269,7 +269,7 @@ it('infers schema types from body data', function () {
                 'float_field' => 12.5,
                 'boolean_field' => true,
                 'email_field' => 'test@example.com',
-            ]
+            ],
         ),
     ];
 
@@ -285,7 +285,7 @@ it('infers schema types from body data', function () {
     expect($schema['properties']['email_field']['format'])->toBe('email');
 });
 
-it('handles optional path parameters', function () {
+it('handles optional path parameters', function (): void {
     $requests = [
         new RequestData(name: 'Get', method: 'GET', uri: 'api/users/{id?}', folder: 'Users'),
     ];

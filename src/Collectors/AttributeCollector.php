@@ -77,7 +77,11 @@ final class AttributeCollector
             $controllerClass = $this->getControllerClass($route);
             $methodName = $this->getMethodName($route);
 
-            if ($controllerClass === null || $methodName === null) {
+            if ($controllerClass === null) {
+                continue;
+            }
+
+            if ($methodName === null) {
                 continue;
             }
 
@@ -110,7 +114,7 @@ final class AttributeCollector
                     $route,
                     $method,
                     $classReflection,
-                    $methodReflection
+                    $methodReflection,
                 );
             }
         }
@@ -161,7 +165,7 @@ final class AttributeCollector
         Route $route,
         string $method,
         ReflectionClass $classReflection,
-        ReflectionMethod $methodReflection
+        ReflectionMethod $methodReflection,
     ): RequestData {
         $requestAttr = $this->getAttribute($methodReflection, ApiRequest::class);
         $folderAttr = $this->getAttribute($methodReflection, ApiFolder::class)
@@ -189,6 +193,7 @@ final class AttributeCollector
 
         // Try to resolve response from ApiResource attribute
         $resourceAttr = $this->getAttribute($methodReflection, ApiResource::class);
+
         if ($resourceAttr !== null && count($responses) === 0) {
             $responseBody = $this->responseResolver->resolve($resourceAttr->resourceClass, $resourceAttr->wrapped);
             $responses[] = new ResponseData('Success', $resourceAttr->status, $responseBody);
@@ -197,6 +202,7 @@ final class AttributeCollector
         // If no ApiResource and no ApiResponse, try auto-detect from return statement
         if ($resourceAttr === null && count($responses) === 0) {
             $returnInfo = $this->returnTypeResolver->resolve($methodReflection);
+
             if ($returnInfo !== null) {
                 $status = $returnInfo['type'] === 'api_response' && str_contains(strtolower($method), 'create') ? 201 : 200;
                 $responses[] = new ResponseData('Success', $status, $returnInfo['data']);
@@ -339,10 +345,10 @@ final class AttributeCollector
         if (Str::startsWith($lastPart, '{')) {
             $lastPart = $parts[count($parts) - 2] ?? $lastPart;
 
-            return $method.' '.Str::title($lastPart).' by ID';
+            return $method . ' ' . Str::title($lastPart) . ' by ID';
         }
 
-        return $method.' '.Str::title(str_replace(['-', '_'], ' ', $lastPart));
+        return $method . ' ' . Str::title(str_replace(['-', '_'], ' ', $lastPart));
     }
 
     private function determineFolderFromUri(string $uri): string
@@ -350,11 +356,11 @@ final class AttributeCollector
         $parts = explode('/', trim($uri, '/'));
 
         if (count($parts) >= 3 && $parts[0] === 'v1') {
-            return Str::title($parts[1]).' / '.Str::title($parts[2]);
+            return Str::title($parts[1]) . ' / ' . Str::title($parts[2]);
         }
 
         if (count($parts) >= 2) {
-            return Str::title($parts[0]).' / '.Str::title($parts[1]);
+            return Str::title($parts[0]) . ' / ' . Str::title($parts[1]);
         }
 
         return Str::title($parts[0] ?? 'General');
@@ -399,8 +405,8 @@ final class AttributeCollector
     private function getAttributes(ReflectionClass|ReflectionMethod $reflection, string $attributeClass): array
     {
         return array_map(
-            fn (ReflectionAttribute $attr) => $attr->newInstance(),
-            $reflection->getAttributes($attributeClass)
+            fn (ReflectionAttribute $attr): object => $attr->newInstance(),
+            $reflection->getAttributes($attributeClass),
         );
     }
 }

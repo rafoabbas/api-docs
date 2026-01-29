@@ -28,6 +28,7 @@ class GenerateCommand extends Command
         $this->info('Collecting routes with attributes...');
 
         $excludePrefixes = $this->option('exclude');
+
         if (is_array($excludePrefixes) && count($excludePrefixes) > 0) {
             $defaultPrefixes = ['_', 'sanctum', 'telescope', 'storage', 'mcp'];
             $this->collector->setExcludePrefixes(array_merge($defaultPrefixes, $excludePrefixes));
@@ -41,7 +42,7 @@ class GenerateCommand extends Command
             return self::FAILURE;
         }
 
-        $this->info('Found '.count($requests).' routes.');
+        $this->info('Found ' . count($requests) . ' routes.');
 
         $collectionName = $this->option('name') ?? config('app.name', 'API');
         $generator = new CollectionGenerator($collectionName);
@@ -55,22 +56,24 @@ class GenerateCommand extends Command
 
         // Ensure directory exists
         $directory = dirname($outputPath);
+
         if (! is_dir($directory)) {
             mkdir($directory, 0755, true);
         }
 
         file_put_contents(
             $outputPath,
-            json_encode($collection, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
+            json_encode($collection, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES),
         );
 
         $this->info("Postman collection generated: {$outputPath}");
-        $this->info('Total requests: '.count($requests));
+        $this->info('Total requests: ' . count($requests));
 
         // Show folder summary
         $folders = collect($requests)->groupBy('folder')->keys()->sort();
         $this->newLine();
         $this->info('Folders:');
+
         foreach ($folders as $folder) {
             $count = collect($requests)->where('folder', $folder)->count();
             $this->line("  - {$folder} ({$count} requests)");
@@ -90,12 +93,13 @@ class GenerateCommand extends Command
     private function configureVariables(CollectionGenerator $generator): void
     {
         $apiDomain = config('app.api_domain');
+
         if (! $apiDomain) {
-            $host = parse_url(config('app.url'), PHP_URL_HOST) ?: 'localhost';
+            $host = parse_url((string) config('app.url'), PHP_URL_HOST) ?: 'localhost';
             $apiDomain = "api.{$host}";
         }
 
-        $scheme = parse_url(config('app.url'), PHP_URL_SCHEME) ?: 'https';
+        $scheme = parse_url((string) config('app.url'), PHP_URL_SCHEME) ?: 'https';
 
         $generator->setVariables([
             'API_URL' => "{$scheme}://{$apiDomain}",
@@ -108,6 +112,7 @@ class GenerateCommand extends Command
 
         // Add custom variables from config if available
         $customVariables = config('api-docs.variables', []);
+
         foreach ($customVariables as $key => $value) {
             $generator->addVariable($key, $value);
         }

@@ -8,11 +8,11 @@ use ApiDocs\Data\QueryParamData;
 use ApiDocs\Data\RequestData;
 use ApiDocs\Data\ResponseData;
 
-it('can create a request data with minimal parameters', function () {
+it('can create a request data with minimal parameters', function (): void {
     $request = new RequestData(
         name: 'Get Users',
         method: 'GET',
-        uri: 'api/users'
+        uri: 'api/users',
     );
 
     expect($request->name)->toBe('Get Users');
@@ -27,7 +27,7 @@ it('can create a request data with minimal parameters', function () {
     expect($request->auth)->toBeNull();
 });
 
-it('can create a request data with all parameters', function () {
+it('can create a request data with all parameters', function (): void {
     $request = new RequestData(
         name: 'Create User',
         method: 'POST',
@@ -42,7 +42,7 @@ it('can create a request data with all parameters', function () {
         queryParams: [new QueryParamData('page', '1')],
         responses: [new ResponseData('Success', 201, ['id' => 1])],
         auth: new AuthData('bearer'),
-        middleware: ['auth:sanctum']
+        middleware: ['auth:sanctum'],
     );
 
     expect($request->name)->toBe('Create User');
@@ -62,11 +62,11 @@ it('can create a request data with all parameters', function () {
     expect($request->middleware)->toContain('auth:sanctum');
 });
 
-it('is readonly', function () {
+it('is readonly', function (): void {
     $request = new RequestData(
         name: 'Test',
         method: 'GET',
-        uri: 'api/test'
+        uri: 'api/test',
     );
 
     $reflection = new ReflectionClass($request);

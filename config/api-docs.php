@@ -41,10 +41,10 @@ return [
     |
     */
     'environments' => [
-         'local' => [
-             'API_URL' => env('API_URL', 'http://localhost'),
-             'BEARER_TOKEN' => '',
-         ],
+        'local' => [
+            'API_URL' => env('API_URL', 'http://localhost'),
+            'BEARER_TOKEN' => '',
+        ],
         // 'staging' => [
         //     'API_URL' => 'https://staging-api.example.com',
         //     'BEARER_TOKEN' => '',

@@ -53,7 +53,7 @@ final class RequestMerger
     {
         $uri = $this->normalizeUri($request->uri);
 
-        return strtoupper($request->method).':'.$uri;
+        return strtoupper($request->method) . ':' . $uri;
     }
 
     /**

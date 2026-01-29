@@ -8,7 +8,7 @@ use ApiDocs\Data\RequestData;
 use ApiDocs\Data\ResponseData;
 use ApiDocs\Generators\CollectionGenerator;
 
-it('generates valid postman collection structure', function () {
+it('generates valid postman collection structure', function (): void {
     $requests = [
         new RequestData(name: 'Get Users', method: 'GET', uri: 'api/users', folder: 'Users'),
     ];
@@ -23,7 +23,7 @@ it('generates valid postman collection structure', function () {
     expect($collection['info']['schema'])->toBe('https://schema.getpostman.com/json/collection/v2.1.0/collection.json');
 });
 
-it('groups requests by folder', function () {
+it('groups requests by folder', function (): void {
     $requests = [
         new RequestData(name: 'Get Users', method: 'GET', uri: 'api/users', folder: 'Users'),
         new RequestData(name: 'Create User', method: 'POST', uri: 'api/users', folder: 'Users'),
@@ -39,7 +39,7 @@ it('groups requests by folder', function () {
     expect($folderNames)->toContain('Products');
 });
 
-it('handles nested folders', function () {
+it('handles nested folders', function (): void {
     $requests = [
         new RequestData(name: 'Request OTP', method: 'POST', uri: 'api/auth/otp', folder: 'Auth / OTP'),
         new RequestData(name: 'Verify OTP', method: 'POST', uri: 'api/auth/otp/verify', folder: 'Auth / OTP'),
@@ -52,7 +52,7 @@ it('handles nested folders', function () {
     expect($collection['item'][0]['item'][0]['name'])->toBe('OTP');
 });
 
-it('adds request method and url', function () {
+it('adds request method and url', function (): void {
     $requests = [
         new RequestData(name: 'Get Users', method: 'GET', uri: 'api/users', folder: 'Users'),
     ];
@@ -66,14 +66,14 @@ it('adds request method and url', function () {
     expect($request['url'])->toBeArray();
 });
 
-it('adds body for post requests', function () {
+it('adds body for post requests', function (): void {
     $requests = [
         new RequestData(
             name: 'Create User',
             method: 'POST',
             uri: 'api/users',
             folder: 'Users',
-            body: ['name' => 'John', 'email' => 'john@example.com']
+            body: ['name' => 'John', 'email' => 'john@example.com'],
         ),
     ];
 
@@ -86,7 +86,7 @@ it('adds body for post requests', function () {
     expect($request['body']['mode'])->toBe('raw');
 });
 
-it('adds query parameters to url', function () {
+it('adds query parameters to url', function (): void {
     $requests = [
         new RequestData(
             name: 'Search',
@@ -96,7 +96,7 @@ it('adds query parameters to url', function () {
             queryParams: [
                 new QueryParamData('q', 'term'),
                 new QueryParamData('page', '1'),
-            ]
+            ],
         ),
     ];
 
@@ -109,7 +109,7 @@ it('adds query parameters to url', function () {
     expect($url['query'])->toHaveCount(2);
 });
 
-it('adds responses as examples', function () {
+it('adds responses as examples', function (): void {
     $requests = [
         new RequestData(
             name: 'Get User',
@@ -119,7 +119,7 @@ it('adds responses as examples', function () {
             responses: [
                 new ResponseData('Success', 200, ['id' => 1]),
                 new ResponseData('Not Found', 404, ['error' => 'Not found']),
-            ]
+            ],
         ),
     ];
 
@@ -133,14 +133,14 @@ it('adds responses as examples', function () {
     expect($responses[0]['code'])->toBe(200);
 });
 
-it('adds auth configuration', function () {
+it('adds auth configuration', function (): void {
     $requests = [
         new RequestData(
             name: 'Protected',
             method: 'GET',
             uri: 'api/protected',
             folder: 'Auth',
-            auth: new AuthData(type: 'bearer')
+            auth: new AuthData(type: 'bearer'),
         ),
     ];
 
@@ -153,14 +153,14 @@ it('adds auth configuration', function () {
     expect($request['auth']['type'])->toBe('bearer');
 });
 
-it('adds noauth correctly', function () {
+it('adds noauth correctly', function (): void {
     $requests = [
         new RequestData(
             name: 'Public',
             method: 'GET',
             uri: 'api/public',
             folder: 'Public',
-            auth: new AuthData(type: 'noauth')
+            auth: new AuthData(type: 'noauth'),
         ),
     ];
 
@@ -172,7 +172,7 @@ it('adds noauth correctly', function () {
     expect($request['auth']['type'])->toBe('noauth');
 });
 
-it('sets collection variables', function () {
+it('sets collection variables', function (): void {
     $requests = [
         new RequestData(name: 'Test', method: 'GET', uri: 'api/test', folder: 'Test'),
     ];
@@ -191,7 +191,7 @@ it('sets collection variables', function () {
     expect($variableKeys)->toContain('TOKEN');
 });
 
-it('adds variable via addVariable', function () {
+it('adds variable via addVariable', function (): void {
     $requests = [
         new RequestData(name: 'Test', method: 'GET', uri: 'api/test', folder: 'Test'),
     ];
@@ -206,7 +206,7 @@ it('adds variable via addVariable', function () {
     expect($customVar['value'])->toBe('custom_value');
 });
 
-it('converts path parameters to postman format', function () {
+it('converts path parameters to postman format', function (): void {
     $requests = [
         new RequestData(name: 'Get User', method: 'GET', uri: 'api/users/{id}', folder: 'Users'),
     ];
@@ -220,7 +220,7 @@ it('converts path parameters to postman format', function () {
     expect($url)->toHaveKey('variable');
 });
 
-it('sorts requests by order within folder', function () {
+it('sorts requests by order within folder', function (): void {
     $requests = [
         new RequestData(name: 'Third', method: 'GET', uri: 'api/c', folder: 'Test', order: 3),
         new RequestData(name: 'First', method: 'GET', uri: 'api/a', folder: 'Test', order: 1),
@@ -237,7 +237,7 @@ it('sorts requests by order within folder', function () {
     expect($items[2]['name'])->toBe('Third');
 });
 
-it('uses API_URL_V1 for v1 routes', function () {
+it('uses API_URL_V1 for v1 routes', function (): void {
     $requests = [
         new RequestData(name: 'V1 Route', method: 'GET', uri: 'v1/users', folder: 'Users'),
     ];
@@ -250,14 +250,14 @@ it('uses API_URL_V1 for v1 routes', function () {
     expect($url['raw'])->toContain('API_URL_V1');
 });
 
-it('adds authorization header for sanctum middleware', function () {
+it('adds authorization header for sanctum middleware', function (): void {
     $requests = [
         new RequestData(
             name: 'Protected',
             method: 'GET',
             uri: 'api/protected',
             folder: 'Auth',
-            middleware: ['auth:sanctum']
+            middleware: ['auth:sanctum'],
         ),
     ];
 

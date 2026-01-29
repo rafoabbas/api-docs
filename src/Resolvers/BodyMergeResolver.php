@@ -7,10 +7,10 @@ namespace ApiDocs\Resolvers;
 use ApiDocs\Attributes\ApiBody;
 use ReflectionMethod;
 
-final class BodyMergeResolver
+final readonly class BodyMergeResolver
 {
     public function __construct(
-        private readonly BodyResolver $bodyResolver = new BodyResolver,
+        private BodyResolver $bodyResolver = new BodyResolver,
     ) {}
 
     /**
@@ -26,7 +26,7 @@ final class BodyMergeResolver
         }
 
         // No ApiBody attribute - just resolve from FormRequest
-        if ($bodyAttr === null) {
+        if (! $bodyAttr instanceof \ApiDocs\Attributes\ApiBody) {
             return $this->bodyResolver->resolve($method);
         }
 

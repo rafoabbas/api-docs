@@ -101,6 +101,7 @@ final class OpenApiGenerator
         $spec['paths'] = $paths;
 
         $securitySchemes = $this->buildSecuritySchemes($requests);
+
         if (count($securitySchemes) > 0) {
             $spec['components'] = [
                 'securitySchemes' => $securitySchemes,
@@ -157,7 +158,7 @@ final class OpenApiGenerator
     private function convertUriToOpenApiPath(string $uri): string
     {
         // Convert Laravel route params {param} to OpenAPI {param}
-        $path = '/'.ltrim($uri, '/');
+        $path = '/' . ltrim($uri, '/');
 
         // Handle optional parameters {param?} -> {param}
         $path = preg_replace('/\{(\w+)\?\}/', '{$1}', $path);
@@ -360,6 +361,7 @@ final class OpenApiGenerator
 
         if (count($response->headers) > 0) {
             $result['headers'] = [];
+
             foreach ($response->headers as $key => $value) {
                 $result['headers'][$key] = [
                     'schema' => ['type' => 'string'],
@@ -460,7 +462,7 @@ final class OpenApiGenerator
 
     private function requiresAuth(RequestData $request): bool
     {
-        if ($request->auth !== null) {
+        if ($request->auth instanceof \ApiDocs\Data\AuthData) {
             return $request->auth->type !== 'noauth';
         }
 
@@ -473,7 +475,7 @@ final class OpenApiGenerator
      */
     private function buildSecurityRequirement(RequestData $request): array
     {
-        if ($request->auth !== null) {
+        if ($request->auth instanceof \ApiDocs\Data\AuthData) {
             return match ($request->auth->type) {
                 'bearer' => ['bearerAuth' => []],
                 'basic' => ['basicAuth' => []],
@@ -506,6 +508,7 @@ final class OpenApiGenerator
                         'basic' => $hasBasic = true,
                         'apikey' => (function () use (&$hasApiKey, &$apiKeyHeader, $request): void {
                             $hasApiKey = true;
+
                             if ($request->auth?->apiKeyHeader) {
                                 $apiKeyHeader = $request->auth->apiKeyHeader;
                             }
@@ -553,7 +556,8 @@ final class OpenApiGenerator
         if (count($this->servers) > 0) {
             return array_map(function (array $server): array {
                 $result = ['url' => $server['url']];
-                if (! empty($server['description'])) {
+
+                if (isset($server['description']) && ($server['description'] !== '' && $server['description'] !== '0')) {
                     $result['description'] = $server['description'];
                 }
 
@@ -595,7 +599,7 @@ final class OpenApiGenerator
     {
         // Use the first part of the folder as the tag
         // e.g., "Auth / OTP" -> "Auth"
-        $parts = array_map('trim', explode('/', $folder));
+        $parts = array_map(trim(...), explode('/', $folder));
 
         return $parts[0];
     }

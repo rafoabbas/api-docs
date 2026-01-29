@@ -6,10 +6,10 @@ namespace ApiDocs\Resolvers;
 
 use ReflectionMethod;
 
-final class ReturnTypeResolver
+final readonly class ReturnTypeResolver
 {
     public function __construct(
-        private readonly ResponseResolver $responseResolver = new ResponseResolver,
+        private ResponseResolver $responseResolver = new ResponseResolver,
     ) {}
 
     /**
@@ -74,6 +74,7 @@ final class ReturnTypeResolver
         }
 
         $source = file_get_contents($filename);
+
         if ($source === false) {
             return null;
         }
@@ -185,11 +186,13 @@ final class ReturnTypeResolver
     {
         // Pattern: return [...] (but not return [...Resource...] which would be something else)
         // This is simple detection - only works for basic arrays
-        if (preg_match('/return\s+\[([^\]]+)\]\s*;/s', $source, $match)) {
-            // Make sure it's not a Resource call
-            if (! preg_match('/Resource/i', $match[1])) {
-                return $this->parseInlineArray($match[1]);
-            }
+        if (! preg_match('/return\s+\[([^\]]+)\]\s*;/s', $source, $match)) {
+            return null;
+        }
+
+        // Make sure it's not a Resource call
+        if (! preg_match('/Resource/i', $match[1])) {
+            return $this->parseInlineArray($match[1]);
         }
 
         return null;
@@ -231,6 +234,7 @@ final class ReturnTypeResolver
 
         foreach ($useMatches[1] as $use) {
             $use = trim($use);
+
             if (preg_match('/(.+)\s+as\s+(\w+)$/', $use, $aliasMatch)) {
                 $uses[$aliasMatch[2]] = $aliasMatch[1];
             } else {
@@ -248,7 +252,7 @@ final class ReturnTypeResolver
         // Try same namespace
         if (preg_match('/namespace\s+([^;]+);/', $fileSource, $nsMatch)) {
             $namespace = trim($nsMatch[1]);
-            $fullClass = $namespace.'\\'.$resourceName;
+            $fullClass = $namespace . '\\' . $resourceName;
 
             if (class_exists($fullClass)) {
                 return $fullClass;
@@ -265,7 +269,8 @@ final class ReturnTypeResolver
         ];
 
         foreach ($commonNamespaces as $ns) {
-            $fullClass = $ns.'\\'.$resourceName;
+            $fullClass = $ns . '\\' . $resourceName;
+
             if (class_exists($fullClass)) {
                 return $fullClass;
             }

@@ -5,13 +5,13 @@ declare(strict_types=1);
 use ApiDocs\Collectors\RequestMerger;
 use ApiDocs\Data\RequestData;
 
-it('returns empty array when both inputs are empty', function () {
+it('returns empty array when both inputs are empty', function (): void {
     $merger = new RequestMerger;
 
     expect($merger->merge([], []))->toBeArray()->toBeEmpty();
 });
 
-it('returns attribute requests when yaml is empty', function () {
+it('returns attribute requests when yaml is empty', function (): void {
     $attributeRequests = [
         new RequestData(name: 'Attr 1', method: 'GET', uri: 'api/users'),
         new RequestData(name: 'Attr 2', method: 'POST', uri: 'api/users'),
@@ -25,7 +25,7 @@ it('returns attribute requests when yaml is empty', function () {
     expect($result[1]->name)->toBe('Attr 2');
 });
 
-it('returns yaml requests when attributes is empty', function () {
+it('returns yaml requests when attributes is empty', function (): void {
     $yamlRequests = [
         new RequestData(name: 'YAML 1', method: 'GET', uri: 'api/products'),
         new RequestData(name: 'YAML 2', method: 'POST', uri: 'api/products'),
@@ -39,7 +39,7 @@ it('returns yaml requests when attributes is empty', function () {
     expect($result[1]->name)->toBe('YAML 2');
 });
 
-it('merges non-conflicting requests from both sources', function () {
+it('merges non-conflicting requests from both sources', function (): void {
     $attributeRequests = [
         new RequestData(name: 'Attr Users', method: 'GET', uri: 'api/users'),
     ];
@@ -54,13 +54,13 @@ it('merges non-conflicting requests from both sources', function () {
     expect($result)->toHaveCount(2);
 });
 
-it('gives priority to attribute requests over yaml requests', function () {
+it('gives priority to attribute requests over yaml requests', function (): void {
     $attributeRequests = [
         new RequestData(
             name: 'Attribute Version',
             method: 'GET',
             uri: 'api/users',
-            description: 'From attributes'
+            description: 'From attributes',
         ),
     ];
 
@@ -69,7 +69,7 @@ it('gives priority to attribute requests over yaml requests', function () {
             name: 'YAML Version',
             method: 'GET',
             uri: 'api/users',
-            description: 'From YAML'
+            description: 'From YAML',
         ),
     ];
 
@@ -81,7 +81,7 @@ it('gives priority to attribute requests over yaml requests', function () {
     expect($result[0]->description)->toBe('From attributes');
 });
 
-it('normalizes uri slashes for comparison', function () {
+it('normalizes uri slashes for comparison', function (): void {
     $attributeRequests = [
         new RequestData(name: 'Attr', method: 'GET', uri: '/api/users/'),
     ];
@@ -97,7 +97,7 @@ it('normalizes uri slashes for comparison', function () {
     expect($result[0]->name)->toBe('Attr');
 });
 
-it('treats different methods as different endpoints', function () {
+it('treats different methods as different endpoints', function (): void {
     $attributeRequests = [
         new RequestData(name: 'GET Users', method: 'GET', uri: 'api/users'),
     ];
@@ -113,7 +113,7 @@ it('treats different methods as different endpoints', function () {
     expect($result)->toHaveCount(3);
 });
 
-it('is case insensitive for http methods', function () {
+it('is case insensitive for http methods', function (): void {
     $attributeRequests = [
         new RequestData(name: 'Attr', method: 'GET', uri: 'api/users'),
     ];
@@ -129,7 +129,7 @@ it('is case insensitive for http methods', function () {
     expect($result[0]->name)->toBe('Attr');
 });
 
-it('handles complex merge scenario', function () {
+it('handles complex merge scenario', function (): void {
     $attributeRequests = [
         new RequestData(name: 'Attr GET users', method: 'GET', uri: 'api/users'),
         new RequestData(name: 'Attr POST users', method: 'POST', uri: 'api/users'),
@@ -147,7 +147,7 @@ it('handles complex merge scenario', function () {
 
     expect($result)->toHaveCount(5);
 
-    $names = array_map(fn ($r) => $r->name, $result);
+    $names = array_map(fn (\ApiDocs\Data\RequestData $r): string => $r->name, $result);
     expect($names)->toContain('Attr GET users');
     expect($names)->toContain('Attr POST users');
     expect($names)->toContain('Attr GET products');

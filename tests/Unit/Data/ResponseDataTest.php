@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use ApiDocs\Data\ResponseData;
 
-it('creates response with minimal parameters', function () {
+it('creates response with minimal parameters', function (): void {
     $response = new ResponseData(name: 'Success');
 
     expect($response->name)->toBe('Success');
@@ -13,12 +13,12 @@ it('creates response with minimal parameters', function () {
     expect($response->headers)->toBeArray()->toBeEmpty();
 });
 
-it('creates response with all parameters', function () {
+it('creates response with all parameters', function (): void {
     $response = new ResponseData(
         name: 'Created',
         status: 201,
         body: ['id' => 1, 'name' => 'John'],
-        headers: ['Location' => '/api/users/1']
+        headers: ['Location' => '/api/users/1'],
     );
 
     expect($response->name)->toBe('Created');
@@ -27,11 +27,11 @@ it('creates response with all parameters', function () {
     expect($response->headers)->toBe(['Location' => '/api/users/1']);
 });
 
-it('creates error response', function () {
+it('creates error response', function (): void {
     $response = new ResponseData(
         name: 'Not Found',
         status: 404,
-        body: ['success' => false, 'message' => 'Resource not found']
+        body: ['success' => false, 'message' => 'Resource not found'],
     );
 
     expect($response->name)->toBe('Not Found');

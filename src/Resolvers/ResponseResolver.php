@@ -85,6 +85,7 @@ final class ResponseResolver
         }
 
         $fileSource = file_get_contents($filename);
+
         if ($fileSource === false) {
             return [];
         }
@@ -150,7 +151,7 @@ final class ResponseResolver
         string $source,
         string $resourceClass,
         string $namespace,
-        array $useStatements
+        array $useStatements,
     ): array {
         $structure = [];
 
@@ -178,10 +179,11 @@ final class ResponseResolver
         string $key,
         string $source,
         string $namespace,
-        array $useStatements
+        array $useStatements,
     ): mixed {
         // Check for nested Resource (e.g., CustomerResource::make)
-        $resourcePattern = "/['\"]".preg_quote($key, '/')."['\"]\s*=>\s*(\w+Resource)::make/";
+        $resourcePattern = "/['\"]" . preg_quote($key, '/') . "['\"]\s*=>\s*(\w+Resource)::make/";
+
         if (preg_match($resourcePattern, $source, $match)) {
             $nestedResourceName = $match[1];
             $nestedResourceClass = $this->resolveResourceClass($nestedResourceName, $namespace, $useStatements);
@@ -194,10 +196,12 @@ final class ResponseResolver
         }
 
         // Check for $this->when pattern
-        $whenPattern = "/['\"]".preg_quote($key, '/')."['\"]\s*=>\s*\\\$this->when/";
+        $whenPattern = "/['\"]" . preg_quote($key, '/') . "['\"]\s*=>\s*\\\$this->when/";
+
         if (preg_match($whenPattern, $source)) {
             // Check if when contains a nested resource
-            $whenResourcePattern = "/['\"]".preg_quote($key, '/')."['\"]\s*=>\s*\\\$this->when\s*\([^,]+,\s*(\w+Resource)::make/";
+            $whenResourcePattern = "/['\"]" . preg_quote($key, '/') . "['\"]\s*=>\s*\\\$this->when\s*\([^,]+,\s*(\w+Resource)::make/";
+
             if (preg_match($whenResourcePattern, $source, $match)) {
                 $nestedResourceName = $match[1];
                 $nestedResourceClass = $this->resolveResourceClass($nestedResourceName, $namespace, $useStatements);
@@ -228,7 +232,8 @@ final class ResponseResolver
 
         // Assume it's in the same namespace
         if ($namespace !== '') {
-            $fullClass = $namespace.'\\'.$resourceName;
+            $fullClass = $namespace . '\\' . $resourceName;
+
             if (class_exists($fullClass)) {
                 return $fullClass;
             }
@@ -243,7 +248,8 @@ final class ResponseResolver
         ];
 
         foreach ($commonNamespaces as $ns) {
-            $fullClass = $ns.'\\'.$resourceName;
+            $fullClass = $ns . '\\' . $resourceName;
+
             if (class_exists($fullClass)) {
                 return $fullClass;
             }
@@ -266,6 +272,7 @@ final class ResponseResolver
             'verified', 'confirmed', 'approved', 'published', 'visible', 'available',
             'allow_',
         ];
+
         foreach ($booleanPatterns as $pattern) {
             if (Str::contains($keySnake, $pattern) || Str::startsWith($keySnake, $pattern)) {
                 return true;
@@ -299,6 +306,7 @@ final class ResponseResolver
 
         // Date/time patterns
         $datePatterns = ['_at', 'date', 'time', 'created', 'updated', 'deleted'];
+
         foreach ($datePatterns as $pattern) {
             if (Str::contains($keySnake, $pattern)) {
                 return '2024-01-15T10:30:00Z';
@@ -343,12 +351,14 @@ final class ResponseResolver
         // Array/collection patterns (but exclude common non-array fields ending in 's')
         $nonArrayFields = ['status', 'alias', 'address', 'class', 'access', 'process', 'success', 'progress'];
         $isNonArray = false;
+
         foreach ($nonArrayFields as $field) {
             if (Str::endsWith($keySnake, $field)) {
                 $isNonArray = true;
                 break;
             }
         }
+
         if (Str::endsWith($key, 's') && ! $isNonArray) {
             return [];
         }

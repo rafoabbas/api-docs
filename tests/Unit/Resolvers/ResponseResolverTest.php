@@ -44,7 +44,7 @@ class TestOrderResource extends JsonResource
     }
 }
 
-it('resolves resource structure with wrapping', function () {
+it('resolves resource structure with wrapping', function (): void {
     $resolver = new ResponseResolver;
     $result = $resolver->resolve(TestUserResource::class, wrapped: true);
 
@@ -56,7 +56,7 @@ it('resolves resource structure with wrapping', function () {
     expect($result['status_code'])->toBe(200);
 });
 
-it('resolves resource structure without wrapping', function () {
+it('resolves resource structure without wrapping', function (): void {
     $resolver = new ResponseResolver;
     $result = $resolver->resolve(TestUserResource::class, wrapped: false);
 
@@ -67,7 +67,7 @@ it('resolves resource structure without wrapping', function () {
     expect($result)->toHaveKey('email');
 });
 
-it('generates example values based on field names', function () {
+it('generates example values based on field names', function (): void {
     $resolver = new ResponseResolver;
     $result = $resolver->resolve(TestUserResource::class, wrapped: false);
 
@@ -75,56 +75,56 @@ it('generates example values based on field names', function () {
     expect($result['email'])->toBe('user@example.com');
 });
 
-it('generates datetime for _at fields', function () {
+it('generates datetime for _at fields', function (): void {
     $resolver = new ResponseResolver;
     $result = $resolver->resolve(TestUserResource::class, wrapped: false);
 
     expect($result['created_at'])->toContain('2024');
 });
 
-it('generates phone value for phone fields', function () {
+it('generates phone value for phone fields', function (): void {
     $resolver = new ResponseResolver;
     $result = $resolver->resolve(TestProfileResource::class, wrapped: false);
 
     expect($result['phone'])->toContain('+');
 });
 
-it('generates url for url fields', function () {
+it('generates url for url fields', function (): void {
     $resolver = new ResponseResolver;
     $result = $resolver->resolve(TestProfileResource::class, wrapped: false);
 
     expect($result['avatar_url'])->toContain('https://');
 });
 
-it('generates boolean for is_ fields', function () {
+it('generates boolean for is_ fields', function (): void {
     $resolver = new ResponseResolver;
     $result = $resolver->resolve(TestProfileResource::class, wrapped: false);
 
     expect($result['is_verified'])->toBeBool();
 });
 
-it('generates status string for status fields', function () {
+it('generates status string for status fields', function (): void {
     $resolver = new ResponseResolver;
     $result = $resolver->resolve(TestOrderResource::class, wrapped: false);
 
     expect($result['status'])->toBe('active');
 });
 
-it('generates price value for price fields', function () {
+it('generates price value for price fields', function (): void {
     $resolver = new ResponseResolver;
     $result = $resolver->resolve(TestOrderResource::class, wrapped: false);
 
     expect($result['total_price'])->toBeNumeric();
 });
 
-it('returns empty array for non-existent class', function () {
+it('returns empty array for non-existent class', function (): void {
     $resolver = new ResponseResolver;
     $result = $resolver->resolve('NonExistentResource', wrapped: false);
 
     expect($result)->toBeEmpty();
 });
 
-it('wraps data in standard format', function () {
+it('wraps data in standard format', function (): void {
     $resolver = new ResponseResolver;
     $result = $resolver->resolve(TestUserResource::class, wrapped: true);
 

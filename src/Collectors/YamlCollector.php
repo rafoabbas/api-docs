@@ -43,6 +43,7 @@ final class YamlCollector
 
         foreach ($files as $file) {
             $content = $this->parseYamlFile($file);
+
             if ($content === null) {
                 continue;
             }
@@ -61,7 +62,7 @@ final class YamlCollector
     {
         $files = [];
         $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($directory, \RecursiveDirectoryIterator::SKIP_DOTS)
+            new \RecursiveDirectoryIterator($directory, \RecursiveDirectoryIterator::SKIP_DOTS),
         );
 
         foreach ($iterator as $file) {
@@ -101,7 +102,8 @@ final class YamlCollector
 
         foreach ($yamlRequests as $index => $requestData) {
             $request = $this->buildRequestData($requestData, $folder, $index);
-            if ($request !== null) {
+
+            if ($request instanceof \ApiDocs\Data\RequestData) {
                 $requests[] = $request;
             }
         }
@@ -120,8 +122,8 @@ final class YamlCollector
 
         return new RequestData(
             name: $data['name'],
-            method: strtoupper($data['method']),
-            uri: ltrim($data['uri'], '/'),
+            method: strtoupper((string) $data['method']),
+            uri: ltrim((string) $data['uri'], '/'),
             description: $data['description'] ?? null,
             folder: $data['folder'] ?? $folder,
             order: $data['order'] ?? $index,

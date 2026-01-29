@@ -96,7 +96,7 @@ class TestController
     public function regularRequest(\Illuminate\Http\Request $request): void {}
 }
 
-it('resolves body from form request', function () {
+it('resolves body from form request', function (): void {
     $resolver = new BodyResolver;
     $method = new ReflectionMethod(TestController::class, 'login');
 
@@ -107,7 +107,7 @@ it('resolves body from form request', function () {
     expect($body)->toHaveKey('password');
 });
 
-it('returns null when no form request parameter', function () {
+it('returns null when no form request parameter', function (): void {
     $resolver = new BodyResolver;
     $method = new ReflectionMethod(TestController::class, 'noRequest');
 
@@ -116,7 +116,7 @@ it('returns null when no form request parameter', function () {
     expect($body)->toBeNull();
 });
 
-it('returns null for regular request class', function () {
+it('returns null for regular request class', function (): void {
     $resolver = new BodyResolver;
     $method = new ReflectionMethod(TestController::class, 'regularRequest');
 
@@ -125,7 +125,7 @@ it('returns null for regular request class', function () {
     expect($body)->toBeNull();
 });
 
-it('generates email value for email fields', function () {
+it('generates email value for email fields', function (): void {
     $resolver = new BodyResolver;
     $method = new ReflectionMethod(TestController::class, 'login');
 
@@ -134,7 +134,7 @@ it('generates email value for email fields', function () {
     expect($body['email'])->toBe('user@example.com');
 });
 
-it('generates integer for integer fields', function () {
+it('generates integer for integer fields', function (): void {
     $resolver = new BodyResolver;
     $method = new ReflectionMethod(TestController::class, 'store');
 
@@ -143,7 +143,7 @@ it('generates integer for integer fields', function () {
     expect($body['age'])->toBeInt();
 });
 
-it('generates boolean for boolean fields', function () {
+it('generates boolean for boolean fields', function (): void {
     $resolver = new BodyResolver;
     $method = new ReflectionMethod(TestController::class, 'store');
 
@@ -152,7 +152,7 @@ it('generates boolean for boolean fields', function () {
     expect($body['is_active'])->toBeBool();
 });
 
-it('generates numeric for numeric fields', function () {
+it('generates numeric for numeric fields', function (): void {
     $resolver = new BodyResolver;
     $method = new ReflectionMethod(TestController::class, 'store');
 
@@ -161,7 +161,7 @@ it('generates numeric for numeric fields', function () {
     expect($body['price'])->toBeNumeric();
 });
 
-it('handles nested fields with dot notation', function () {
+it('handles nested fields with dot notation', function (): void {
     $resolver = new BodyResolver;
     $method = new ReflectionMethod(TestController::class, 'nested');
 
@@ -174,7 +174,7 @@ it('handles nested fields with dot notation', function () {
     expect($body['address'])->toHaveKey('city');
 });
 
-it('uses first option for enum fields', function () {
+it('uses first option for enum fields', function (): void {
     $resolver = new BodyResolver;
     $method = new ReflectionMethod(TestController::class, 'withEnum');
 
@@ -184,7 +184,7 @@ it('uses first option for enum fields', function () {
     expect($body['type'])->toBe('a');
 });
 
-it('generates empty array for array fields', function () {
+it('generates empty array for array fields', function (): void {
     $resolver = new BodyResolver;
     $method = new ReflectionMethod(TestController::class, 'withArray');
 
@@ -195,7 +195,7 @@ it('generates empty array for array fields', function () {
     expect($body['tags'])->toBeArray();
 });
 
-it('generates file placeholder for file fields', function () {
+it('generates file placeholder for file fields', function (): void {
     $resolver = new BodyResolver;
     $method = new ReflectionMethod(TestController::class, 'withFile');
 
@@ -205,7 +205,7 @@ it('generates file placeholder for file fields', function () {
     expect($body['document'])->toBe('(file)');
 });
 
-it('generates phone variable for phone fields', function () {
+it('generates phone variable for phone fields', function (): void {
     $resolver = new BodyResolver;
     $method = new ReflectionMethod(TestController::class, 'store');
 

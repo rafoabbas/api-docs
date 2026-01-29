@@ -32,9 +32,11 @@
         "symfony/yaml": "^7.0"
     },
     "require-dev": {
+        "laravel/pint": "^1.27",
         "orchestra/testbench": "^9.0|^10.0",
         "pestphp/pest": "^3.0|^4.0",
-        "pestphp/pest-plugin-laravel": "^3.0|^4.0"
+        "pestphp/pest-plugin-laravel": "^3.0|^4.0",
+        "rector/rector": "^2.3"
     },
     "autoload": {
         "psr-4": {
@@ -55,7 +57,12 @@
     },
     "scripts": {
         "test": "vendor/bin/pest",
-        "test:coverage": "vendor/bin/pest --coverage"
+        "test:coverage": "vendor/bin/pest --coverage",
+        "lint": "vendor/bin/pint",
+        "lint:test": "vendor/bin/pint --test",
+        "rector": "vendor/bin/rector",
+        "rector:dry": "vendor/bin/rector --dry-run",
+        "fix": "vendor/bin/rector && vendor/bin/pint"
     },
     "config": {
         "sort-packages": true,

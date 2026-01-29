@@ -23,7 +23,7 @@ abstract class TestCase extends Orchestra
 
     protected function getEnvironmentSetUp($app): void
     {
-        $app['config']->set('api-docs.yaml_path', __DIR__.'/fixtures/yaml');
+        $app['config']->set('api-docs.yaml_path', __DIR__ . '/fixtures/yaml');
         $app['config']->set('api-docs.exclude_prefixes', ['_', 'sanctum', 'telescope']);
     }
 }

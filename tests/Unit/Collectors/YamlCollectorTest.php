@@ -5,15 +5,16 @@ declare(strict_types=1);
 use ApiDocs\Collectors\YamlCollector;
 use ApiDocs\Data\RequestData;
 
-beforeEach(function () {
-    $this->tempPath = sys_get_temp_dir().'/api-docs-test-'.uniqid();
+beforeEach(function (): void {
+    $this->tempPath = sys_get_temp_dir() . '/api-docs-test-' . uniqid();
     mkdir($this->tempPath, 0755, true);
 });
 
-afterEach(function () {
+afterEach(function (): void {
     // Clean up temp files
     if (is_dir($this->tempPath)) {
-        $files = glob($this->tempPath.'/*.yaml');
+        $files = glob($this->tempPath . '/*.yaml');
+
         foreach ($files as $file) {
             @unlink($file);
         }
@@ -21,19 +22,19 @@ afterEach(function () {
     }
 });
 
-it('returns empty array when directory does not exist', function () {
+it('returns empty array when directory does not exist', function (): void {
     $collector = new YamlCollector('/non/existent/path');
 
     expect($collector->collect())->toBeArray()->toBeEmpty();
 });
 
-it('returns empty array when directory is empty', function () {
+it('returns empty array when directory is empty', function (): void {
     $collector = new YamlCollector($this->tempPath);
 
     expect($collector->collect())->toBeArray()->toBeEmpty();
 });
 
-it('parses yaml file and returns request data', function () {
+it('parses yaml file and returns request data', function (): void {
     $yaml = <<<'YAML'
 folder: Test
 requests:
@@ -42,7 +43,7 @@ requests:
     uri: /api/test
 YAML;
 
-    file_put_contents($this->tempPath.'/test.yaml', $yaml);
+    file_put_contents($this->tempPath . '/test.yaml', $yaml);
 
     $collector = new YamlCollector($this->tempPath);
     $requests = $collector->collect();
@@ -55,7 +56,7 @@ YAML;
     expect($requests[0]->folder)->toBe('Test');
 });
 
-it('parses multiple requests from yaml', function () {
+it('parses multiple requests from yaml', function (): void {
     $yaml = <<<'YAML'
 folder: Users
 requests:
@@ -70,7 +71,7 @@ requests:
     uri: /api/users/{id}
 YAML;
 
-    file_put_contents($this->tempPath.'/users.yaml', $yaml);
+    file_put_contents($this->tempPath . '/users.yaml', $yaml);
 
     $collector = new YamlCollector($this->tempPath);
     $requests = $collector->collect();
@@ -81,7 +82,7 @@ YAML;
     expect($requests[2]->name)->toBe('Get User');
 });
 
-it('parses request body from yaml', function () {
+it('parses request body from yaml', function (): void {
     $yaml = <<<'YAML'
 folder: Test
 requests:
@@ -93,7 +94,7 @@ requests:
       price: 100
 YAML;
 
-    file_put_contents($this->tempPath.'/test.yaml', $yaml);
+    file_put_contents($this->tempPath . '/test.yaml', $yaml);
 
     $collector = new YamlCollector($this->tempPath);
     $requests = $collector->collect();
@@ -101,7 +102,7 @@ YAML;
     expect($requests[0]->body)->toBe(['name' => 'Test Item', 'price' => 100]);
 });
 
-it('parses auth configuration from yaml', function () {
+it('parses auth configuration from yaml', function (): void {
     $yaml = <<<'YAML'
 folder: Test
 requests:
@@ -113,7 +114,7 @@ requests:
       token: "{{MY_TOKEN}}"
 YAML;
 
-    file_put_contents($this->tempPath.'/test.yaml', $yaml);
+    file_put_contents($this->tempPath . '/test.yaml', $yaml);
 
     $collector = new YamlCollector($this->tempPath);
     $requests = $collector->collect();
@@ -123,7 +124,7 @@ YAML;
     expect($requests[0]->auth->token)->toBe('{{MY_TOKEN}}');
 });
 
-it('parses responses from yaml', function () {
+it('parses responses from yaml', function (): void {
     $yaml = <<<'YAML'
 folder: Test
 requests:
@@ -142,7 +143,7 @@ requests:
           error: Item not found
 YAML;
 
-    file_put_contents($this->tempPath.'/test.yaml', $yaml);
+    file_put_contents($this->tempPath . '/test.yaml', $yaml);
 
     $collector = new YamlCollector($this->tempPath);
     $requests = $collector->collect();
@@ -154,7 +155,7 @@ YAML;
     expect($requests[0]->responses[1]->status)->toBe(404);
 });
 
-it('parses headers from yaml', function () {
+it('parses headers from yaml', function (): void {
     $yaml = <<<'YAML'
 folder: Test
 requests:
@@ -166,7 +167,7 @@ requests:
       X-Another: another-value
 YAML;
 
-    file_put_contents($this->tempPath.'/test.yaml', $yaml);
+    file_put_contents($this->tempPath . '/test.yaml', $yaml);
 
     $collector = new YamlCollector($this->tempPath);
     $requests = $collector->collect();
@@ -176,7 +177,7 @@ YAML;
     expect($requests[0]->headers[0]->value)->toBe('custom-value');
 });
 
-it('parses query params from yaml', function () {
+it('parses query params from yaml', function (): void {
     $yaml = <<<'YAML'
 folder: Test
 requests:
@@ -189,7 +190,7 @@ requests:
       limit: "10"
 YAML;
 
-    file_put_contents($this->tempPath.'/test.yaml', $yaml);
+    file_put_contents($this->tempPath . '/test.yaml', $yaml);
 
     $collector = new YamlCollector($this->tempPath);
     $requests = $collector->collect();
@@ -199,8 +200,8 @@ YAML;
     expect($requests[0]->queryParams[0]->value)->toBe('search term');
 });
 
-it('skips invalid yaml files', function () {
-    file_put_contents($this->tempPath.'/invalid.yaml', 'not: valid: yaml: content:');
+it('skips invalid yaml files', function (): void {
+    file_put_contents($this->tempPath . '/invalid.yaml', 'not: valid: yaml: content:');
 
     $collector = new YamlCollector($this->tempPath);
     $requests = $collector->collect();
@@ -208,7 +209,7 @@ it('skips invalid yaml files', function () {
     expect($requests)->toBeArray();
 });
 
-it('skips requests missing required fields', function () {
+it('skips requests missing required fields', function (): void {
     $yaml = <<<'YAML'
 folder: Test
 requests:
@@ -221,7 +222,7 @@ requests:
     uri: /api/no-name
 YAML;
 
-    file_put_contents($this->tempPath.'/test.yaml', $yaml);
+    file_put_contents($this->tempPath . '/test.yaml', $yaml);
 
     $collector = new YamlCollector($this->tempPath);
     $requests = $collector->collect();
@@ -230,7 +231,7 @@ YAML;
     expect($requests[0]->name)->toBe('Valid Request');
 });
 
-it('can change yaml path via setter', function () {
+it('can change yaml path via setter', function (): void {
     $collector = new YamlCollector('/initial/path');
     $collector->setYamlPath($this->tempPath);
 
@@ -242,15 +243,15 @@ requests:
     uri: /api/test
 YAML;
 
-    file_put_contents($this->tempPath.'/test.yaml', $yaml);
+    file_put_contents($this->tempPath . '/test.yaml', $yaml);
 
     $requests = $collector->collect();
 
     expect($requests)->toHaveCount(1);
 });
 
-it('reads yaml files recursively from subdirectories', function () {
-    $subdir = $this->tempPath.'/subdir';
+it('reads yaml files recursively from subdirectories', function (): void {
+    $subdir = $this->tempPath . '/subdir';
     mkdir($subdir, 0755, true);
 
     $yaml1 = <<<'YAML'
@@ -269,8 +270,8 @@ requests:
     uri: /api/sub
 YAML;
 
-    file_put_contents($this->tempPath.'/root.yaml', $yaml1);
-    file_put_contents($subdir.'/sub.yaml', $yaml2);
+    file_put_contents($this->tempPath . '/root.yaml', $yaml1);
+    file_put_contents($subdir . '/sub.yaml', $yaml2);
 
     $collector = new YamlCollector($this->tempPath);
     $requests = $collector->collect();
@@ -278,6 +279,6 @@ YAML;
     expect($requests)->toHaveCount(2);
 
     // Clean up subdir
-    @unlink($subdir.'/sub.yaml');
+    @unlink($subdir . '/sub.yaml');
     @rmdir($subdir);
 });

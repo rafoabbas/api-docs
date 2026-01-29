@@ -33,6 +33,7 @@ class ApiGenerateCommand extends Command
     public function handle(): int
     {
         $format = $this->option('format');
+
         if (! in_array($format, ['postman', 'openapi', 'both'])) {
             $this->error("Invalid format: {$format}. Use 'postman', 'openapi', or 'both'.");
 
@@ -84,10 +85,8 @@ class ApiGenerateCommand extends Command
             $this->generateEnvironments($outputDir);
         }
 
-        if ($format === 'openapi' || $format === 'both') {
-            if (! $this->generateOpenApi($requests, $outputDir)) {
-                $success = false;
-            }
+        if (($format === 'openapi' || $format === 'both') && ! $this->generateOpenApi($requests, $outputDir)) {
+            $success = false;
         }
 
         if ($success) {
@@ -117,7 +116,7 @@ class ApiGenerateCommand extends Command
 
         file_put_contents(
             $outputPath,
-            json_encode($collection, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
+            json_encode($collection, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES),
         );
 
         $this->line("  Postman collection: {$outputPath}");
@@ -139,11 +138,7 @@ class ApiGenerateCommand extends Command
         $outputPath = $this->getOpenApiOutputPath($outputDir, $openapiFormat);
         $this->ensureDirectoryExists(dirname($outputPath));
 
-        if ($openapiFormat === 'json') {
-            $output = $generator->generateJson($requests);
-        } else {
-            $output = $generator->generateYaml($requests);
-        }
+        $output = $openapiFormat === 'json' ? $generator->generateJson($requests) : $generator->generateYaml($requests);
 
         file_put_contents($outputPath, $output);
 
@@ -155,12 +150,13 @@ class ApiGenerateCommand extends Command
     private function configureApiVariables(CollectionGenerator $generator): void
     {
         $apiDomain = config('app.api_domain');
+
         if (! $apiDomain) {
-            $host = parse_url(config('app.url'), PHP_URL_HOST) ?: 'localhost';
+            $host = parse_url((string) config('app.url'), PHP_URL_HOST) ?: 'localhost';
             $apiDomain = "api.{$host}";
         }
 
-        $scheme = parse_url(config('app.url'), PHP_URL_SCHEME) ?: 'https';
+        $scheme = parse_url((string) config('app.url'), PHP_URL_SCHEME) ?: 'https';
 
         $generator->setVariables([
             'API_URL' => "{$scheme}://{$apiDomain}",
@@ -173,6 +169,7 @@ class ApiGenerateCommand extends Command
 
         // Add custom variables from config
         $customVariables = config('api-docs.variables', []);
+
         foreach ($customVariables as $key => $value) {
             $generator->addVariable($key, $value);
         }
@@ -190,16 +187,18 @@ class ApiGenerateCommand extends Command
         }
 
         $servers = $config['servers'] ?? [];
+
         if (count($servers) > 0) {
             $generator->setServers($servers);
         } else {
             // Build default server URL
             $apiDomain = config('app.api_domain');
+
             if (! $apiDomain) {
-                $host = parse_url(config('app.url'), PHP_URL_HOST) ?: 'localhost';
+                $host = parse_url((string) config('app.url'), PHP_URL_HOST) ?: 'localhost';
                 $apiDomain = "api.{$host}";
             }
-            $scheme = parse_url(config('app.url'), PHP_URL_SCHEME) ?: 'https';
+            $scheme = parse_url((string) config('app.url'), PHP_URL_SCHEME) ?: 'https';
             $generator->addServer("{$scheme}://{$apiDomain}", 'API Server');
         }
     }
@@ -225,7 +224,7 @@ class ApiGenerateCommand extends Command
 
             file_put_contents(
                 $outputPath,
-                json_encode($environment, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
+                json_encode($environment, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES),
             );
 
             $this->line("  Environment ({$name}): {$outputPath}");
@@ -237,7 +236,7 @@ class ApiGenerateCommand extends Command
         $filename = "{$timestamp}-{$name}.postman_environment.json";
 
         if ($outputDir !== null) {
-            return rtrim($outputDir, '/')."/postman/{$filename}";
+            return rtrim($outputDir, '/') . "/postman/{$filename}";
         }
 
         $configPath = config('api-docs.output.postman_path', storage_path('app/collections'));
@@ -251,7 +250,7 @@ class ApiGenerateCommand extends Command
         $filename = "{$timestamp}-collection.json";
 
         if ($outputDir !== null) {
-            return rtrim($outputDir, '/')."/postman/{$filename}";
+            return rtrim($outputDir, '/') . "/postman/{$filename}";
         }
 
         $configPath = config('api-docs.output.postman_path', storage_path('app/collections'));
@@ -266,7 +265,7 @@ class ApiGenerateCommand extends Command
         $filename = "{$timestamp}-openapi.{$extension}";
 
         if ($outputDir !== null) {
-            return rtrim($outputDir, '/')."/openapi/{$filename}";
+            return rtrim($outputDir, '/') . "/openapi/{$filename}";
         }
 
         $configPath = config('api-docs.output.openapi_path', storage_path('app/openapi'));
@@ -297,6 +296,7 @@ class ApiGenerateCommand extends Command
         $folders = collect($requests)->groupBy('folder')->keys()->sort();
 
         $this->info('Endpoints by folder:');
+
         foreach ($folders as $folder) {
             $count = collect($requests)->where('folder', $folder)->count();
             $this->line("  - {$folder} ({$count} endpoints)");

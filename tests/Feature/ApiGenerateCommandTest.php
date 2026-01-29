@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 use Illuminate\Support\Facades\File;
 
-beforeEach(function () {
+beforeEach(function (): void {
     // Create temp directories for output
-    $this->outputPath = sys_get_temp_dir().'/api-docs-output-'.uniqid();
-    mkdir($this->outputPath.'/postman', 0755, true);
-    mkdir($this->outputPath.'/openapi', 0755, true);
+    $this->outputPath = sys_get_temp_dir() . '/api-docs-output-' . uniqid();
+    mkdir($this->outputPath . '/postman', 0755, true);
+    mkdir($this->outputPath . '/openapi', 0755, true);
 
     // Create yaml fixtures directory
-    $this->yamlPath = sys_get_temp_dir().'/api-docs-yaml-'.uniqid();
+    $this->yamlPath = sys_get_temp_dir() . '/api-docs-yaml-' . uniqid();
     mkdir($this->yamlPath, 0755, true);
 
     $yaml = <<<'YAML'
@@ -28,26 +28,26 @@ requests:
           message: success
 YAML;
 
-    file_put_contents($this->yamlPath.'/test.yaml', $yaml);
+    file_put_contents($this->yamlPath . '/test.yaml', $yaml);
 });
 
-afterEach(function () {
+afterEach(function (): void {
     // Clean up
-    if (isset($this->outputPath) && is_dir($this->outputPath)) {
+    if (property_exists($this, 'outputPath') && $this->outputPath !== null && is_dir($this->outputPath)) {
         File::deleteDirectory($this->outputPath);
     }
 
-    if (isset($this->yamlPath) && is_dir($this->yamlPath)) {
+    if (property_exists($this, 'yamlPath') && $this->yamlPath !== null && is_dir($this->yamlPath)) {
         File::deleteDirectory($this->yamlPath);
     }
 });
 
-it('has the api:generate command registered', function () {
+it('has the api:generate command registered', function (): void {
     $this->artisan('api:generate --help')
         ->assertSuccessful();
 });
 
-it('accepts format option', function () {
+it('accepts format option', function (): void {
     $this->artisan('api:generate', [
         '--format' => 'postman',
         '--yaml' => $this->yamlPath,
@@ -55,21 +55,21 @@ it('accepts format option', function () {
     ])->assertSuccessful();
 });
 
-it('rejects invalid format option', function () {
+it('rejects invalid format option', function (): void {
     $this->artisan('api:generate', [
         '--format' => 'invalid',
         '--yaml' => $this->yamlPath,
     ])->assertFailed();
 });
 
-it('generates postman collection when format is postman', function () {
+it('generates postman collection when format is postman', function (): void {
     $this->artisan('api:generate', [
         '--format' => 'postman',
         '--yaml' => $this->yamlPath,
         '--output' => $this->outputPath,
     ])->assertSuccessful();
 
-    $files = glob($this->outputPath.'/postman/*-collection.json');
+    $files = glob($this->outputPath . '/postman/*-collection.json');
 
     expect($files)->not->toBeEmpty();
 
@@ -81,34 +81,34 @@ it('generates postman collection when format is postman', function () {
     expect($json['info']['schema'])->toBe('https://schema.getpostman.com/json/collection/v2.1.0/collection.json');
 });
 
-it('generates openapi spec when format is openapi', function () {
+it('generates openapi spec when format is openapi', function (): void {
     $this->artisan('api:generate', [
         '--format' => 'openapi',
         '--yaml' => $this->yamlPath,
         '--output' => $this->outputPath,
     ])->assertSuccessful();
 
-    $yamlFiles = glob($this->outputPath.'/openapi/*-openapi.yaml');
-    $jsonFiles = glob($this->outputPath.'/openapi/*-openapi.json');
+    $yamlFiles = glob($this->outputPath . '/openapi/*-openapi.yaml');
+    $jsonFiles = glob($this->outputPath . '/openapi/*-openapi.json');
 
     expect(count($yamlFiles) + count($jsonFiles))->toBeGreaterThan(0);
 });
 
-it('generates both formats when format is both', function () {
+it('generates both formats when format is both', function (): void {
     $this->artisan('api:generate', [
         '--format' => 'both',
         '--yaml' => $this->yamlPath,
         '--output' => $this->outputPath,
     ])->assertSuccessful();
 
-    $postmanFiles = glob($this->outputPath.'/postman/*-collection.json');
-    $openapiFiles = glob($this->outputPath.'/openapi/*-openapi.*');
+    $postmanFiles = glob($this->outputPath . '/postman/*-collection.json');
+    $openapiFiles = glob($this->outputPath . '/openapi/*-openapi.*');
 
     expect($postmanFiles)->not->toBeEmpty();
     expect($openapiFiles)->not->toBeEmpty();
 });
 
-it('can output openapi as json', function () {
+it('can output openapi as json', function (): void {
     $this->artisan('api:generate', [
         '--format' => 'openapi',
         '--openapi-format' => 'json',
@@ -116,7 +116,7 @@ it('can output openapi as json', function () {
         '--output' => $this->outputPath,
     ])->assertSuccessful();
 
-    $files = glob($this->outputPath.'/openapi/*-openapi.json');
+    $files = glob($this->outputPath . '/openapi/*-openapi.json');
 
     expect($files)->not->toBeEmpty();
 
@@ -126,7 +126,7 @@ it('can output openapi as json', function () {
     expect($json['openapi'])->toBe('3.0.3');
 });
 
-it('can output openapi as yaml', function () {
+it('can output openapi as yaml', function (): void {
     $this->artisan('api:generate', [
         '--format' => 'openapi',
         '--openapi-format' => 'yaml',
@@ -134,7 +134,7 @@ it('can output openapi as yaml', function () {
         '--output' => $this->outputPath,
     ])->assertSuccessful();
 
-    $files = glob($this->outputPath.'/openapi/*-openapi.yaml');
+    $files = glob($this->outputPath . '/openapi/*-openapi.yaml');
 
     expect($files)->not->toBeEmpty();
 
@@ -143,19 +143,20 @@ it('can output openapi as yaml', function () {
     expect($content)->toContain('openapi: 3.0.3');
 });
 
-it('reads yaml files from specified path', function () {
+it('reads yaml files from specified path', function (): void {
     $this->artisan('api:generate', [
         '--format' => 'postman',
         '--yaml' => $this->yamlPath,
         '--output' => $this->outputPath,
     ])->assertSuccessful();
 
-    $files = glob($this->outputPath.'/postman/*-collection.json');
+    $files = glob($this->outputPath . '/postman/*-collection.json');
     $content = file_get_contents($files[0]);
     $json = json_decode($content, true);
 
     // Find the test request in the collection
     $found = false;
+
     foreach ($json['item'] as $folder) {
         if (isset($folder['item'])) {
             foreach ($folder['item'] as $item) {
@@ -170,7 +171,7 @@ it('reads yaml files from specified path', function () {
     expect($found)->toBeTrue();
 });
 
-it('uses custom collection name', function () {
+it('uses custom collection name', function (): void {
     $this->artisan('api:generate', [
         '--format' => 'postman',
         '--name' => 'My Custom API',
@@ -178,7 +179,7 @@ it('uses custom collection name', function () {
         '--output' => $this->outputPath,
     ])->assertSuccessful();
 
-    $files = glob($this->outputPath.'/postman/*-collection.json');
+    $files = glob($this->outputPath . '/postman/*-collection.json');
     $content = file_get_contents($files[0]);
     $json = json_decode($content, true);
 

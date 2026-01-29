@@ -16,15 +16,13 @@ class ApiDocsServiceProvider extends ServiceProvider
     {
         $this->app->singleton(AttributeCollector::class);
 
-        $this->app->singleton(YamlCollector::class, function ($app): YamlCollector {
-            return new YamlCollector(
-                config('api-docs.yaml_path')
-            );
-        });
+        $this->app->singleton(YamlCollector::class, fn ($app): YamlCollector => new YamlCollector(
+            config('api-docs.yaml_path'),
+        ));
 
         $this->mergeConfigFrom(
-            __DIR__.'/../config/api-docs.php',
-            'api-docs'
+            __DIR__ . '/../config/api-docs.php',
+            'api-docs',
         );
     }
 
@@ -37,7 +35,7 @@ class ApiDocsServiceProvider extends ServiceProvider
             ]);
 
             $this->publishes([
-                __DIR__.'/../config/api-docs.php' => config_path('api-docs.php'),
+                __DIR__ . '/../config/api-docs.php' => config_path('api-docs.php'),
             ], 'api-docs-config');
         }
     }
