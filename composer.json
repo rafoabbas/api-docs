@@ -1,14 +1,29 @@
 {
     "name": "rafoabbas/api-docs",
     "description": "Generate API documentation (Postman collections & OpenAPI specs) from PHP attributes and YAML files",
+    "keywords": [
+        "laravel",
+        "api",
+        "documentation",
+        "postman",
+        "openapi",
+        "swagger",
+        "attributes",
+        "rest"
+    ],
     "type": "library",
     "license": "MIT",
+    "homepage": "https://github.com/rafoabbas/api-docs",
     "authors": [
         {
-            "name": "Rafo Abbas",
+            "name": "Rauf Abbaszade",
             "email": "rafo.abbas@gmail.com"
         }
     ],
+    "support": {
+        "issues": "https://github.com/rafoabbas/api-docs/issues",
+        "source": "https://github.com/rafoabbas/api-docs"
+    },
     "require": {
         "php": "^8.2",
         "illuminate/support": "^11.0|^12.0",
