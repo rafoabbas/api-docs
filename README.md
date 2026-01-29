@@ -91,6 +91,16 @@ php artisan api:generate --exclude=admin       # Exclude prefixes
 - [YAML Definitions](docs/yaml-definitions.md) - YAML file format
 - [Auto-Resolve](docs/auto-resolve.md) - Auto-detection features
 
+## Roadmap
+
+- [ ] Swagger UI integration - Interactive docs at `/api/docs`
+- [ ] Markdown export
+- [ ] Validation rules to OpenAPI schema (`required|email` → `type: string, format: email`)
+- [ ] `#[ApiDeprecated]` attribute
+- [ ] Pagination auto-detect (`LengthAwarePaginator` response)
+- [ ] PHP Enum to OpenAPI enum conversion
+- [ ] Insomnia/Bruno export formats
+
 ## License
 
 MIT
