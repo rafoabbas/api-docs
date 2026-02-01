@@ -198,11 +198,11 @@ it('handles noauth correctly', function (): void {
     expect($operation)->not->toHaveKey('security');
 });
 
-it('extracts tags from folder names', function (): void {
+it('extracts tags from folder names using last part', function (): void {
     $requests = [
-        new RequestData(name: 'R1', method: 'GET', uri: 'api/users', folder: 'Users / List'),
-        new RequestData(name: 'R2', method: 'GET', uri: 'api/products', folder: 'Products'),
-        new RequestData(name: 'R3', method: 'POST', uri: 'api/users', folder: 'Users / Create'),
+        new RequestData(name: 'R1', method: 'GET', uri: 'api/users', folder: 'V1 / Customer / Auth'),
+        new RequestData(name: 'R2', method: 'GET', uri: 'api/products', folder: 'V1 / Customer / Order'),
+        new RequestData(name: 'R3', method: 'POST', uri: 'api/users', folder: 'V1 / Customer / Auth'),
     ];
 
     $generator = new OpenApiGenerator;
@@ -210,8 +210,8 @@ it('extracts tags from folder names', function (): void {
 
     $tagNames = array_column($spec['tags'], 'name');
 
-    expect($tagNames)->toContain('Users');
-    expect($tagNames)->toContain('Products');
+    expect($tagNames)->toContain('Auth');
+    expect($tagNames)->toContain('Order');
     expect(count(array_unique($tagNames)))->toBe(count($tagNames)); // No duplicates
 });
 

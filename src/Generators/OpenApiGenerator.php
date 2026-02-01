@@ -597,10 +597,10 @@ final class OpenApiGenerator
 
     private function extractTagFromFolder(string $folder): string
     {
-        // Use the first part of the folder as the tag
-        // e.g., "Auth / OTP" -> "Auth"
+        // Use the last part of the folder as the tag
+        // e.g., "V1 / Customer / Auth" -> "Auth"
         $parts = array_map(trim(...), explode('/', $folder));
 
-        return $parts[0];
+        return end($parts) ?: $parts[0];
     }
 }
