@@ -47,6 +47,9 @@
                 tryItOutEnabled: true,
                 requestInterceptor: (request) => {
                     const defaultHeaders = @json($defaultHeaders);
+                    // Remove Swagger UI default headers before applying config headers
+                    delete request.headers['Accept'];
+                    delete request.headers['accept'];
                     Object.keys(defaultHeaders).forEach(key => {
                         request.headers[key] = defaultHeaders[key];
                     });
