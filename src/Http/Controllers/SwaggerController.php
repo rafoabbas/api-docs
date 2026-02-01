@@ -9,8 +9,10 @@ use ApiDocs\Collectors\RequestMerger;
 use ApiDocs\Collectors\YamlCollector;
 use ApiDocs\Generators\OpenApiGenerator;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 class SwaggerController extends Controller
 {
@@ -19,23 +21,49 @@ class SwaggerController extends Controller
         private readonly YamlCollector $yamlCollector,
     ) {}
 
-    public function index(): Response
+    public function index(Request $request): Response
     {
+        $this->validateToken($request);
+
         $config = config('api-docs.swagger', []);
         $title = config('api-docs.openapi.title', 'API Documentation');
         $darkMode = $config['dark_mode'] ?? true;
         $persistAuthorization = $config['persist_authorization'] ?? true;
+        $token = $request->query('token');
+
+        $specUrl = url(config('api-docs.swagger.path', '/api/docs') . '/openapi.json');
+
+        if ($token) {
+            $specUrl .= '?token=' . $token;
+        }
 
         return response()->view('api-docs::swagger', [
             'title' => $title,
             'darkMode' => $darkMode,
             'persistAuthorization' => $persistAuthorization,
-            'specUrl' => url(config('api-docs.swagger.path', '/api/docs') . '/openapi.json'),
+            'specUrl' => $specUrl,
         ]);
     }
 
-    public function openapi(): JsonResponse
+    private function validateToken(Request $request): void
     {
+        $configToken = config('api-docs.swagger.token');
+
+        if ($configToken === null || $configToken === '') {
+            return;
+        }
+
+        $providedToken = $request->query('token');
+
+        if ($providedToken !== $configToken) {
+            throw new AccessDeniedHttpException('Invalid or missing access token.');
+        }
+    }
+
+    public function openapi(Request $request): JsonResponse
+    {
+        $this->validateToken($request);
+
         $requests = $this->attributeCollector->collect();
         $yamlRequests = $this->yamlCollector->collect();
 

@@ -153,6 +153,13 @@ return [
         | Persist authorization data (tokens) across browser sessions
         */
         'persist_authorization' => true,
+
+        /*
+        | Access token for Swagger UI (optional)
+        | When set, users must provide ?token=xxx to access the docs
+        | Set via API_DOCS_SWAGGER_TOKEN env variable
+        */
+        'token' => env('API_DOCS_SWAGGER_TOKEN'),
     ],
 
     /*

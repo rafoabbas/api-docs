@@ -122,3 +122,59 @@ it('uses default server url', function (): void {
     expect($json['servers'])->toBeArray();
     expect($json['servers'])->not->toBeEmpty();
 });
+
+it('allows access without token when token not configured', function (): void {
+    config(['api-docs.swagger.token' => null]);
+
+    $response = $this->get('/api/docs');
+
+    $response->assertStatus(200);
+});
+
+it('denies access with invalid token', function (): void {
+    config(['api-docs.swagger.token' => 'secret-token']);
+
+    $response = $this->get('/api/docs?token=wrong-token');
+
+    $response->assertStatus(403);
+});
+
+it('denies access without token when token is configured', function (): void {
+    config(['api-docs.swagger.token' => 'secret-token']);
+
+    $response = $this->get('/api/docs');
+
+    $response->assertStatus(403);
+});
+
+it('allows access with valid token', function (): void {
+    config(['api-docs.swagger.token' => 'secret-token']);
+
+    $response = $this->get('/api/docs?token=secret-token');
+
+    $response->assertStatus(200);
+});
+
+it('passes token to openapi spec url', function (): void {
+    config(['api-docs.swagger.token' => 'secret-token']);
+
+    $response = $this->get('/api/docs?token=secret-token');
+
+    $response->assertSee('openapi.json?token=secret-token');
+});
+
+it('protects openapi endpoint with token', function (): void {
+    config(['api-docs.swagger.token' => 'secret-token']);
+
+    $response = $this->get('/api/docs/openapi.json');
+
+    $response->assertStatus(403);
+});
+
+it('allows openapi access with valid token', function (): void {
+    config(['api-docs.swagger.token' => 'secret-token']);
+
+    $response = $this->get('/api/docs/openapi.json?token=secret-token');
+
+    $response->assertStatus(200);
+});
