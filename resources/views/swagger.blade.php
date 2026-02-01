@@ -47,12 +47,17 @@
                 tryItOutEnabled: true,
                 requestInterceptor: (request) => {
                     const defaultHeaders = @json($defaultHeaders);
-                    // Remove Swagger UI default headers before applying config headers
-                    delete request.headers['Accept'];
-                    delete request.headers['accept'];
+                    // Replace all headers with config headers only
+                    const newHeaders = {};
+                    // Keep Authorization if exists
+                    if (request.headers['Authorization']) {
+                        newHeaders['Authorization'] = request.headers['Authorization'];
+                    }
+                    // Apply config headers
                     Object.keys(defaultHeaders).forEach(key => {
-                        request.headers[key] = defaultHeaders[key];
+                        newHeaders[key] = defaultHeaders[key];
                     });
+                    request.headers = newHeaders;
                     return request;
                 }
             });
