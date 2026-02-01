@@ -156,10 +156,16 @@ return [
 
         /*
         | Access token for Swagger UI (optional)
-        | When set, users must provide ?token=xxx to access the docs
+        | When set, users must provide ?token=xxx or header to access the docs
         | Set via API_DOCS_SWAGGER_TOKEN env variable
         */
         'token' => env('API_DOCS_SWAGGER_TOKEN'),
+
+        /*
+        | Header name for token authentication
+        | Token can be sent via query param (?token=xxx) or this header
+        */
+        'token_header' => 'X-Api-Docs-Token',
     ],
 
     /*

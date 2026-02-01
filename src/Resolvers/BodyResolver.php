@@ -233,7 +233,7 @@ final class BodyResolver
         // Check for common field patterns
         $patterns = [
             'email' => 'user@example.com',
-            'phone' => '{{PHONE}}',
+            'phone' => '+905551234567',
             'password' => 'password123',
             'name' => 'John Doe',
             'first_name' => 'John',
@@ -248,12 +248,12 @@ final class BodyResolver
             'postal_code' => '34000',
             'url' => 'https://example.com',
             'website' => 'https://example.com',
-            'token' => '{{BEARER_TOKEN}}',
-            'otp' => '{{OTP_CODE}}',
-            'otp_code' => '{{OTP_CODE}}',
+            'token' => 'abc123token',
+            'otp' => '123456',
+            'otp_code' => '123456',
             'code' => '123456',
-            'uuid' => '{{UUID}}',
-            'order_quote_id' => '{{ORDER_UUID}}',
+            'uuid' => '550e8400-e29b-41d4-a716-446655440000',
+            'order_quote_id' => '550e8400-e29b-41d4-a716-446655440000',
         ];
 
         foreach ($patterns as $pattern => $value) {

@@ -53,7 +53,8 @@ class SwaggerController extends Controller
             return;
         }
 
-        $providedToken = $request->query('token');
+        $headerName = config('api-docs.swagger.token_header', 'X-Api-Docs-Token');
+        $providedToken = $request->query('token') ?? $request->header($headerName);
 
         if ($providedToken !== $configToken) {
             throw new AccessDeniedHttpException('Invalid or missing access token.');

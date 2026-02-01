@@ -205,11 +205,11 @@ it('generates file placeholder for file fields', function (): void {
     expect($body['document'])->toBe('(file)');
 });
 
-it('generates phone variable for phone fields', function (): void {
+it('generates phone value for phone fields', function (): void {
     $resolver = new BodyResolver;
     $method = new ReflectionMethod(TestController::class, 'store');
 
     $body = $resolver->resolve($method);
 
-    expect($body['phone'])->toBe('{{PHONE}}');
+    expect($body['phone'])->toBe('+905551234567');
 });
