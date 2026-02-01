@@ -84,6 +84,30 @@ php artisan api:generate --exclude=admin       # Exclude prefixes
 - **Authentication** from middleware (`auth:sanctum`, `auth`)
 - **Route parameters** from URI (`{id}` → `:id`)
 
+## Swagger UI
+
+Interactive API documentation is available at `/api/docs` by default.
+
+```php
+// config/api-docs.php
+'swagger' => [
+    'enabled' => true,
+    'path' => '/api/docs',
+    'middleware' => [],
+    'dark_mode' => true,
+    'persist_authorization' => true,
+],
+```
+
+**Endpoints:**
+- `/api/docs` - Swagger UI interface
+- `/api/docs/openapi.json` - OpenAPI specification
+
+**Disable in production:**
+```env
+API_DOCS_SWAGGER_ENABLED=false
+```
+
 ## Documentation
 
 - [Attributes](docs/attributes.md) - All attributes with examples
@@ -93,7 +117,7 @@ php artisan api:generate --exclude=admin       # Exclude prefixes
 
 ## Roadmap
 
-- [ ] Swagger UI integration - Interactive docs at `/api/docs`
+- [x] Swagger UI integration - Interactive docs at `/api/docs`
 - [ ] Markdown export
 - [ ] Validation rules to OpenAPI schema (`required|email` → `type: string, format: email`)
 - [ ] `#[ApiDeprecated]` attribute

@@ -121,6 +121,42 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Swagger UI Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Settings for the interactive Swagger UI documentation.
+    |
+    */
+    'swagger' => [
+        /*
+        | Enable or disable Swagger UI
+        */
+        'enabled' => env('API_DOCS_SWAGGER_ENABLED', true),
+
+        /*
+        | URL path for Swagger UI
+        */
+        'path' => '/api/docs',
+
+        /*
+        | Middleware to apply to Swagger routes
+        | Use ['web', 'auth'] to require authentication in production
+        */
+        'middleware' => ['web'],
+
+        /*
+        | Enable dark mode
+        */
+        'dark_mode' => true,
+
+        /*
+        | Persist authorization data (tokens) across browser sessions
+        */
+        'persist_authorization' => true,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Output Configuration
     |--------------------------------------------------------------------------
     |
