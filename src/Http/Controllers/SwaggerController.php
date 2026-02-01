@@ -42,6 +42,7 @@ class SwaggerController extends Controller
             'darkMode' => $darkMode,
             'persistAuthorization' => $persistAuthorization,
             'specUrl' => $specUrl,
+            'defaultHeaders' => config('api-docs.default_headers', []),
         ]);
     }
 

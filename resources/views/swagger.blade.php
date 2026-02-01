@@ -46,7 +46,10 @@
                 showCommonExtensions: true,
                 tryItOutEnabled: true,
                 requestInterceptor: (request) => {
-                    request.headers['Accept'] = 'application/json';
+                    const defaultHeaders = @json($defaultHeaders);
+                    Object.keys(defaultHeaders).forEach(key => {
+                        request.headers[key] = defaultHeaders[key];
+                    });
                     return request;
                 }
             });
