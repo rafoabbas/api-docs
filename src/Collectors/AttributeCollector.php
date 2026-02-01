@@ -67,6 +67,7 @@ final class AttributeCollector
      */
     public function collect(): array
     {
+        $this->excludePrefixes = config('api-docs.exclude_prefixes', $this->excludePrefixes);
         $requests = [];
 
         foreach ($this->router->getRoutes()->getRoutes() as $route) {
