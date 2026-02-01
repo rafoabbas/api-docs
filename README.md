@@ -96,12 +96,20 @@ Interactive API documentation is available at `/api/docs` by default.
     'middleware' => [],
     'dark_mode' => true,
     'persist_authorization' => true,
+    'token' => env('API_DOCS_SWAGGER_TOKEN'),
 ],
 ```
 
 **Endpoints:**
 - `/api/docs` - Swagger UI interface
 - `/api/docs/openapi.json` - OpenAPI specification
+
+**Protect with token:**
+```env
+API_DOCS_SWAGGER_TOKEN=your-secret-token
+```
+
+Access: `/api/docs?token=your-secret-token`
 
 **Disable in production:**
 ```env
