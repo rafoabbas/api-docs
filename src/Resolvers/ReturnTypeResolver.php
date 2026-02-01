@@ -25,13 +25,16 @@ final readonly class ReturnTypeResolver
             return null;
         }
 
-        // Check for Resource::make() or new Resource() return
-        if ($resourceClass = $this->detectResourceReturn($source, $method)) {
+        // Check for Resource::make(), new Resource(), or Resource::collection() return
+        if ($resourceResult = $this->detectResourceReturn($source, $method)) {
+            $resourceData = $this->responseResolver->resolve($resourceResult['class'], wrapped: false);
+
             return [
                 'type' => 'resource',
-                'data' => $this->responseResolver->resolve($resourceClass, wrapped: false),
-                'resourceClass' => $resourceClass,
+                'data' => $resourceResult['isCollection'] ? [$resourceData] : $resourceData,
+                'resourceClass' => $resourceResult['class'],
                 'wrapped' => false,
+                'isCollection' => $resourceResult['isCollection'],
             ];
         }
 
@@ -99,18 +102,31 @@ final readonly class ReturnTypeResolver
     }
 
     /**
-     * Detect direct Resource return: return SomeResource::make() or return new SomeResource()
+     * Detect direct Resource return: return SomeResource::make(), new SomeResource(), or SomeResource::collection()
+     *
+     * @return array{class: string, isCollection: bool}|null
      */
-    private function detectResourceReturn(string $source, ReflectionMethod $method): ?string
+    private function detectResourceReturn(string $source, ReflectionMethod $method): ?array
     {
+        // Pattern: return SomeResource::collection(
+        if (preg_match('/return\s+(\w+Resource)::collection\s*\(/i', $source, $match)) {
+            $resourceClass = $this->resolveResourceClass($match[1], $method);
+
+            return $resourceClass !== null ? ['class' => $resourceClass, 'isCollection' => true] : null;
+        }
+
         // Pattern: return SomeResource::make(
         if (preg_match('/return\s+(\w+Resource)::make\s*\(/i', $source, $match)) {
-            return $this->resolveResourceClass($match[1], $method);
+            $resourceClass = $this->resolveResourceClass($match[1], $method);
+
+            return $resourceClass !== null ? ['class' => $resourceClass, 'isCollection' => false] : null;
         }
 
         // Pattern: return new SomeResource(
         if (preg_match('/return\s+new\s+(\w+Resource)\s*\(/i', $source, $match)) {
-            return $this->resolveResourceClass($match[1], $method);
+            $resourceClass = $this->resolveResourceClass($match[1], $method);
+
+            return $resourceClass !== null ? ['class' => $resourceClass, 'isCollection' => false] : null;
         }
 
         return null;

@@ -195,7 +195,21 @@ final class AttributeCollector
         $resourceAttr = $this->getAttribute($methodReflection, ApiResource::class);
 
         if ($resourceAttr !== null && count($responses) === 0) {
-            $responseBody = $this->responseResolver->resolve($resourceAttr->resourceClass, $resourceAttr->wrapped);
+            $isCollection = $resourceAttr->collection ?? $this->detectCollectionFromMethod($methodReflection);
+            $isWrapped = $resourceAttr->wrapped ?? $this->detectWrappedFromMethod($methodReflection);
+            $resourceData = $this->responseResolver->resolve($resourceAttr->resourceClass, wrapped: false);
+
+            if ($isWrapped) {
+                $responseBody = [
+                    'success' => true,
+                    'status_code' => $resourceAttr->status,
+                    'message' => null,
+                    'data' => $isCollection ? [$resourceData] : $resourceData,
+                ];
+            } else {
+                $responseBody = ['data' => $isCollection ? [$resourceData] : $resourceData];
+            }
+
             $responses[] = new ResponseData('Success', $resourceAttr->status, $responseBody);
         }
 
@@ -364,6 +378,60 @@ final class AttributeCollector
         }
 
         return Str::title($parts[0] ?? 'General');
+    }
+
+    /**
+     * Get method source code for analysis.
+     */
+    private function getMethodSource(ReflectionMethod $method): ?string
+    {
+        $filename = $method->getFileName();
+        $startLine = $method->getStartLine();
+        $endLine = $method->getEndLine();
+
+        if ($filename === false || $startLine === false || $endLine === false) {
+            return null;
+        }
+
+        $source = file_get_contents($filename);
+
+        if ($source === false) {
+            return null;
+        }
+
+        $lines = explode("\n", $source);
+
+        return implode("\n", array_slice($lines, $startLine - 1, $endLine - $startLine + 1));
+    }
+
+    /**
+     * Detect if method returns a collection by analyzing the method source code.
+     */
+    private function detectCollectionFromMethod(ReflectionMethod $method): bool
+    {
+        $methodSource = $this->getMethodSource($method);
+
+        if ($methodSource === null) {
+            return false;
+        }
+
+        // Check for ::collection( pattern
+        return (bool) preg_match('/\w+Resource::collection\s*\(/i', $methodSource);
+    }
+
+    /**
+     * Detect if method uses ApiResponse wrapper by analyzing the method source code.
+     */
+    private function detectWrappedFromMethod(ReflectionMethod $method): bool
+    {
+        $methodSource = $this->getMethodSource($method);
+
+        if ($methodSource === null) {
+            return false;
+        }
+
+        // Check for ApiResponse:: pattern (success, created, error, etc.)
+        return (bool) preg_match('/ApiResponse::/i', $methodSource);
     }
 
     /**

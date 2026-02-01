@@ -12,12 +12,14 @@ final readonly class ApiResource
 {
     /**
      * @param  class-string<JsonResource>  $resourceClass  The Resource class to use for response structure
-     * @param  bool  $wrapped  Whether the response is wrapped in ApiResponse format
+     * @param  bool|null  $wrapped  Whether the response is wrapped in ApiResponse format (null = auto-detect from method body)
      * @param  int  $status  HTTP status code
+     * @param  bool|null  $collection  Whether the response is a collection (null = auto-detect from method body)
      */
     public function __construct(
         public string $resourceClass,
-        public bool $wrapped = true,
+        public ?bool $wrapped = null,
         public int $status = 200,
+        public ?bool $collection = null,
     ) {}
 }
