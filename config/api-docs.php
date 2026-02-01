@@ -17,6 +17,7 @@ return [
         'telescope',
         'storage',
         'mcp',
+        'api/docs',
     ],
 
     /*
