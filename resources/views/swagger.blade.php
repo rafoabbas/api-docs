@@ -44,7 +44,11 @@
                 filter: true,
                 showExtensions: true,
                 showCommonExtensions: true,
-                tryItOutEnabled: true
+                tryItOutEnabled: true,
+                requestInterceptor: (request) => {
+                    request.headers['Accept'] = 'application/json';
+                    return request;
+                }
             });
         };
     </script>
