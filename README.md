@@ -125,13 +125,42 @@ API_DOCS_SWAGGER_ENABLED=false
 
 ## Roadmap
 
+### Completed
 - [x] Swagger UI integration - Interactive docs at `/api/docs`
+
+### Export Formats
 - [ ] Markdown export
+- [ ] Insomnia export format
+- [ ] Bruno export format
+- [ ] Postman Cloud sync
+
+### Schema & Validation
 - [ ] Validation rules to OpenAPI schema (`required|email` → `type: string, format: email`)
-- [ ] `#[ApiDeprecated]` attribute
-- [ ] Pagination auto-detect (`LengthAwarePaginator` response)
 - [ ] PHP Enum to OpenAPI enum conversion
-- [ ] Insomnia/Bruno export formats
+- [ ] JSON:API specification support
+
+### Attributes
+- [ ] `#[ApiDeprecated]` - Mark endpoints as deprecated
+- [ ] `#[ApiRateLimit]` - Document rate limits
+- [ ] `#[ApiWebhook]` - Webhook documentation
+
+### Auto-Detection
+- [ ] Pagination auto-detect (`LengthAwarePaginator` response)
+- [ ] Factory examples - Generate example data from Laravel factories
+- [ ] File upload - Better multipart/form-data support
+
+### Authentication
+- [ ] OAuth2 flows documentation
+- [ ] Multiple auth schemes per endpoint
+
+### UI & Visualization
+- [ ] ReDoc UI - Alternative documentation UI
+- [ ] Scalar UI - Modern API documentation (scalar.com)
+- [ ] Code snippets - curl, JavaScript, Python, PHP examples
+- [ ] API changelog - Version diff documentation
+
+### Versioning
+- [ ] API versioning - Separate specs for v1, v2, etc.
 
 ## License
 
