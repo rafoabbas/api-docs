@@ -121,13 +121,17 @@ public function store(Request $request): JsonResponse
 
 #[ApiResource(UserResource::class, wrapped: false)]
 public function profile(): JsonResponse
+
+#[ApiResource(UserResource::class, collection: true)]
+public function index(): JsonResponse
 ```
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `resourceClass` | `string` | required | Fully qualified Resource class name |
 | `status` | `int` | `200` | HTTP status code for the response |
-| `wrapped` | `bool` | `true` | Wrap in standard API response format |
+| `wrapped` | `?bool` | `null` | Wrap in standard API response format (auto-detected if null) |
+| `collection` | `?bool` | `null` | Return as array/collection (auto-detected if null) |
 
 ### Wrapped Response Format
 

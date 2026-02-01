@@ -127,6 +127,37 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Swagger UI Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Settings for the interactive Swagger UI documentation.
+    |
+    */
+    'swagger' => [
+        // Enable or disable Swagger UI
+        'enabled' => env('API_DOCS_SWAGGER_ENABLED', true),
+
+        // URL path for Swagger UI
+        'path' => '/api/docs',
+
+        // Middleware to apply to Swagger routes
+        'middleware' => [],
+
+        // Enable dark mode
+        'dark_mode' => true,
+
+        // Persist authorization data across sessions
+        'persist_authorization' => true,
+
+        // Access token (optional) - users must provide ?token=xxx
+        'token' => env('API_DOCS_SWAGGER_TOKEN'),
+
+        // Header name for token authentication
+        'token_header' => 'X-Api-Docs-Token',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Output Configuration
     |--------------------------------------------------------------------------
     |
@@ -234,6 +265,44 @@ Output directories for generated files.
     'postman_path' => base_path('docs/postman'),
     'openapi_path' => base_path('docs/openapi'),
 ],
+```
+
+### swagger
+
+Swagger UI settings.
+
+```php
+'swagger' => [
+    'enabled' => true,
+    'path' => '/api/docs',
+    'middleware' => [],
+    'dark_mode' => true,
+    'persist_authorization' => true,
+    'token' => env('API_DOCS_SWAGGER_TOKEN'),
+    'token_header' => 'X-Api-Docs-Token',
+],
+```
+
+| Option | Description |
+|--------|-------------|
+| `enabled` | Enable/disable Swagger UI |
+| `path` | URL path for Swagger UI (default: `/api/docs`) |
+| `middleware` | Middleware to apply (e.g., `['auth']`) |
+| `dark_mode` | Enable dark theme |
+| `persist_authorization` | Remember auth tokens in browser |
+| `token` | Access token for protecting docs |
+| `token_header` | Header name for token auth |
+
+**Protect with token:**
+```env
+API_DOCS_SWAGGER_TOKEN=your-secret-token
+```
+
+Access: `/api/docs?token=your-secret-token` or header `X-Api-Docs-Token: your-secret-token`
+
+**Disable in production:**
+```env
+API_DOCS_SWAGGER_ENABLED=false
 ```
 
 ## Command Options
