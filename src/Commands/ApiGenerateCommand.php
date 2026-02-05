@@ -215,11 +215,17 @@ class ApiGenerateCommand extends Command
 
         $generator = new EnvironmentGenerator;
         $timestamp = time();
+        $appName = config('app.name', 'API');
 
-        foreach ($environments as $name => $variables) {
-            $environment = $generator->generate($name, $variables);
+        foreach ($environments as $key => $variables) {
+            // Build environment name: "{APP_NAME} ({key})" or just "{APP_NAME}" for local
+            $environmentName = $key === 'local'
+                ? $appName
+                : "{$appName} ({$key})";
 
-            $outputPath = $this->getEnvironmentOutputPath($outputDir, $name, $timestamp);
+            $environment = $generator->generate($environmentName, $variables);
+
+            $outputPath = $this->getEnvironmentOutputPath($outputDir, $key, $timestamp);
             $this->ensureDirectoryExists(dirname($outputPath));
 
             file_put_contents(
@@ -227,7 +233,7 @@ class ApiGenerateCommand extends Command
                 json_encode($environment, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES),
             );
 
-            $this->line("  Environment ({$name}): {$outputPath}");
+            $this->line("  Environment ({$key}): {$outputPath}");
         }
     }
 
