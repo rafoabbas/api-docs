@@ -232,6 +232,10 @@ public function index(): JsonResponse
 | `description` | `?string` | `null` | Parameter description |
 | `disabled` | `bool` | `false` | Whether parameter is disabled by default |
 
+### Auto-Resolution
+
+For GET and DELETE requests without `ApiQueryParam` attributes, query parameters are automatically resolved from the FormRequest's `rules()` method. See [Auto-Resolve](auto-resolve.md#query-parameters-from-formrequest) for details.
+
 ---
 
 ## ApiAuth
@@ -342,19 +346,31 @@ pm.response.to.have.status(200);
 
 ## ApiPreRequest
 
-Add pre-request scripts. Repeatable.
+Add pre-request scripts. Can be applied to class or method. Repeatable.
 
 ```php
 use ApiDocs\Attributes\ApiPreRequest;
 
-#[ApiPreRequest('pm.variables.set("timestamp", Date.now());')]
-#[ApiPreRequest('pm.variables.set("random_email", "user" + Math.random() + "@test.com");')]
-public function store(Request $request): JsonResponse
+// Class-level: applies to all methods in controller
+#[ApiPreRequest('pm.variables.set("api_version", "v1");')]
+class ApiController extends Controller
+{
+    // Method-level: combined with class-level scripts
+    #[ApiPreRequest('pm.variables.set("timestamp", Date.now());')]
+    #[ApiPreRequest('pm.variables.set("random_email", "user" + Math.random() + "@test.com");')]
+    public function store(Request $request): JsonResponse
+}
 ```
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `script` | `string` | required | JavaScript pre-request script |
+
+### Script Execution Order
+
+When both class and method-level scripts are defined:
+1. Class-level scripts execute first (in order)
+2. Method-level scripts execute after (in order)
 
 ---
 

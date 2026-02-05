@@ -80,6 +80,7 @@ php artisan api:generate --exclude=admin       # Exclude prefixes
 ## Auto-Resolve Features
 
 - **Request body** from FormRequest `rules()`
+- **Query parameters** from FormRequest `rules()` (for GET/DELETE requests)
 - **Response structure** from Resource `toArray()`
 - **Authentication** from middleware (`auth:sanctum`, `auth`)
 - **Route parameters** from URI (`{id}` → `:id`)
@@ -127,6 +128,8 @@ API_DOCS_SWAGGER_ENABLED=false
 
 ### Completed
 - [x] Swagger UI integration - Interactive docs at `/api/docs`
+- [x] Query parameter auto-resolve from FormRequest for GET/DELETE requests
+- [x] Class-level `ApiPreRequest` support
 
 ### Export Formats
 - [ ] Markdown export

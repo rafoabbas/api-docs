@@ -93,6 +93,83 @@ Result:
 
 ---
 
+## Query Parameters from FormRequest
+
+For GET and DELETE requests, the package automatically extracts query parameters from the FormRequest's `rules()` method.
+
+### How It Works
+
+```php
+// app/Http/Requests/ListUsersRequest.php
+class ListUsersRequest extends FormRequest
+{
+    public function rules(): array
+    {
+        return [
+            'page' => 'nullable|integer|min:1',
+            'per_page' => 'nullable|integer|min:1|max:100',
+            'search' => 'nullable|string|max:255',
+            'status' => 'nullable|in:active,inactive,pending',
+            'sort_by' => 'nullable|string',
+        ];
+    }
+}
+
+// app/Http/Controllers/UserController.php
+class UserController extends Controller
+{
+    // Query params auto-resolved from ListUsersRequest
+    public function index(ListUsersRequest $request): JsonResponse
+    {
+        // ...
+    }
+}
+```
+
+### Generated Query Parameters
+
+| Key | Value | Description | Disabled |
+|-----|-------|-------------|----------|
+| `page` | `1` | Optional | true |
+| `per_page` | `10` | Optional | true |
+| `search` | `search term` | Optional | true |
+| `status` | `active` | Optional | true |
+| `sort_by` | `value` | Optional | true |
+
+### Value Generation Rules
+
+| Field Pattern | Generated Value |
+|---------------|-----------------|
+| `page` | `1` |
+| `per_page`, `limit` | `10` |
+| `*_id`, `id`, `count`, `quantity` | `1` |
+| `query`, `search`, `q` | `search term` |
+| `*email*` | `user@example.com` |
+| `*phone*` | `+905551234567` |
+| `*name*` | `John Doe` |
+| `*token*` | `abc123token` |
+| `*uuid*` | `550e8400-e29b-41d4-a716-446655440000` |
+| `*lat*`, `*latitude*` | `41.0082` |
+| `*lng*`, `*lon*`, `*longitude*` | `28.9784` |
+| `*price*`, `*amount*`, `*cost*` | `99.99` |
+| `boolean` rule | `true` |
+| `integer` rule | `1` |
+| `date` rule | `2024-01-15` |
+| `in:opt1,opt2` rule | First option (`opt1`) |
+| Other | `value` |
+
+### Manual Override
+
+If you define `ApiQueryParam` attributes manually, auto-resolution is skipped:
+
+```php
+#[ApiQueryParam('page', '1', description: 'Page number')]
+#[ApiQueryParam('limit', '25', description: 'Items per page')]
+public function index(ListUsersRequest $request): JsonResponse
+```
+
+---
+
 ## Response from Resource
 
 The package auto-detects return statements and resolves response structure from Resource classes.
