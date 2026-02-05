@@ -24,6 +24,7 @@ use ApiDocs\Data\ResponseData;
 use ApiDocs\Data\TestData;
 use ApiDocs\Data\VariableData;
 use ApiDocs\Resolvers\BodyMergeResolver;
+use ApiDocs\Resolvers\QueryParamResolver;
 use ApiDocs\Resolvers\ResponseResolver;
 use ApiDocs\Resolvers\ReturnTypeResolver;
 use Illuminate\Routing\Route;
@@ -40,6 +41,8 @@ final class AttributeCollector
 
     private readonly BodyMergeResolver $bodyMergeResolver;
 
+    private readonly QueryParamResolver $queryParamResolver;
+
     private readonly ResponseResolver $responseResolver;
 
     private readonly ReturnTypeResolver $returnTypeResolver;
@@ -48,6 +51,7 @@ final class AttributeCollector
         private readonly Router $router,
     ) {
         $this->bodyMergeResolver = new BodyMergeResolver;
+        $this->queryParamResolver = new QueryParamResolver;
         $this->responseResolver = new ResponseResolver;
         $this->returnTypeResolver = new ReturnTypeResolver;
     }
@@ -181,11 +185,11 @@ final class AttributeCollector
         $folder = $folderAttr?->name ?? $this->determineFolderFromUri($route->uri());
 
         $headers = $this->collectHeaders($classReflection, $methodReflection);
-        $queryParams = $this->collectQueryParams($methodReflection);
+        $queryParams = $this->collectQueryParams($methodReflection, $method);
         $responses = $this->collectResponses($methodReflection);
         $variables = $this->collectVariables($methodReflection);
         $tests = $this->collectTests($methodReflection);
-        $preRequestScripts = $this->collectPreRequestScripts($methodReflection);
+        $preRequestScripts = $this->collectPreRequestScripts($classReflection, $methodReflection);
 
         // Resolve body using BodyMergeResolver (handles merge logic)
         $body = $this->bodyMergeResolver->resolve($methodReflection, $bodyAttr, $method);
@@ -277,12 +281,18 @@ final class AttributeCollector
     /**
      * @return array<int, QueryParamData>
      */
-    private function collectQueryParams(ReflectionMethod $methodReflection): array
+    private function collectQueryParams(ReflectionMethod $methodReflection, string $httpMethod): array
     {
         $params = [];
 
+        // Collect from ApiQueryParam attributes first
         foreach ($this->getAttributes($methodReflection, ApiQueryParam::class) as $attr) {
             $params[] = new QueryParamData($attr->key, $attr->value, $attr->description, $attr->disabled);
+        }
+
+        // For GET and DELETE requests, also resolve from FormRequest if no manual params defined
+        if (in_array($httpMethod, ['GET', 'DELETE']) && count($params) === 0) {
+            $params = array_merge($params, $this->queryParamResolver->resolve($methodReflection));
         }
 
         return $params;
@@ -333,10 +343,16 @@ final class AttributeCollector
     /**
      * @return array<string>
      */
-    private function collectPreRequestScripts(ReflectionMethod $methodReflection): array
+    private function collectPreRequestScripts(ReflectionClass $classReflection, ReflectionMethod $methodReflection): array
     {
         $scripts = [];
 
+        // Collect from class-level attributes first
+        foreach ($this->getAttributes($classReflection, ApiPreRequest::class) as $attr) {
+            $scripts[] = $attr->script;
+        }
+
+        // Then collect from method-level attributes
         foreach ($this->getAttributes($methodReflection, ApiPreRequest::class) as $attr) {
             $scripts[] = $attr->script;
         }
