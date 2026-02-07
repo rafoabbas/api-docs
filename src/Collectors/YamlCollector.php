@@ -307,12 +307,17 @@ final class YamlCollector
         return $result;
     }
 
-    /**
-     * @param  array<string, mixed>|null  $auth
-     */
-    private function parseAuth(?array $auth): ?AuthData
+    private function parseAuth(array|bool|null $auth): ?AuthData
     {
         if ($auth === null) {
+            return null;
+        }
+
+        if ($auth === true) {
+            return new AuthData(type: 'bearer', token: '{{BEARER_TOKEN}}');
+        }
+
+        if ($auth === false) {
             return null;
         }
 
