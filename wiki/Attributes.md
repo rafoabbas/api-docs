@@ -169,7 +169,7 @@ public function login(LoginRequest $request): JsonResponse
 |-----------|------|---------|-------------|
 | `name` | `string` | required | Variable name to set |
 | `path` | `string` | required | JSON path to extract value |
-| `scope` | `string` | `'collection'` | Variable scope |
+| `scope` | `string` | `'environment'` | Variable scope |
 
 ### Scopes
 
@@ -177,12 +177,26 @@ public function login(LoginRequest $request): JsonResponse
 - `environment` - Environment variable (available based on selected environment)
 - `global` - Global variable (available across all collections)
 
+> **Note:** The setter function used in generated scripts is controlled by the `variable_scope` config option, not the individual variable's `scope`. See [[Configuration]] for details.
+
 ### Generated Test Script
 
+The setter function depends on the `variable_scope` config:
+
+When `variable_scope` is `collection`:
 ```javascript
 var jsonData = pm.response.json();
 if (jsonData.data.token) {
     pm.collectionVariables.set("BEARER_TOKEN", jsonData.data.token);
+    console.log("BEARER_TOKEN updated: " + jsonData.data.token);
+}
+```
+
+When `variable_scope` is `environment`:
+```javascript
+var jsonData = pm.response.json();
+if (jsonData.data.token) {
+    pm.environment.set("BEARER_TOKEN", jsonData.data.token);
     console.log("BEARER_TOKEN updated: " + jsonData.data.token);
 }
 ```
@@ -234,7 +248,7 @@ public function index(): JsonResponse
 
 ### Auto-Resolution
 
-For GET and DELETE requests without `ApiQueryParam` attributes, query parameters are automatically resolved from the FormRequest's `rules()` method. See [Auto-Resolve](auto-resolve.md#query-parameters-from-formrequest) for details.
+For GET and DELETE requests without `ApiQueryParam` attributes, query parameters are automatically resolved from the FormRequest's `rules()` method. See [[Auto-Resolve]] for details.
 
 ---
 

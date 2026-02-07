@@ -62,7 +62,7 @@ class ApiGenerateCommand extends Command
         $yamlRequests = $yamlCollector->collect();
         $this->line("  Found {$this->countRequests($yamlRequests)} requests from YAML files.");
 
-        // Merge requests (attributes take priority)
+        // Merge requests (YAML overrides auto-collected attributes, attributes fill gaps)
         $merger = new RequestMerger;
         $requests = $merger->merge($attributeRequests, $yamlRequests);
 
@@ -78,11 +78,17 @@ class ApiGenerateCommand extends Command
         $success = true;
         $outputDir = $this->option('output');
 
+        $variableScope = config('api-docs.variable_scope', 'collection');
+
         if ($format === 'postman' || $format === 'both') {
-            if (! $this->generatePostman($requests, $outputDir)) {
+            if (! $this->generatePostman($requests, $outputDir, $variableScope)) {
                 $success = false;
             }
-            $this->generateEnvironments($outputDir);
+
+            // Only generate environment files when variable_scope is 'environment'
+            if ($variableScope === 'environment') {
+                $this->generateEnvironments($outputDir);
+            }
         }
 
         if (($format === 'openapi' || $format === 'both') && ! $this->generateOpenApi($requests, $outputDir)) {
@@ -100,14 +106,15 @@ class ApiGenerateCommand extends Command
     /**
      * @param  array<int, \ApiDocs\Data\RequestData>  $requests
      */
-    private function generatePostman(array $requests, ?string $outputDir): bool
+    private function generatePostman(array $requests, ?string $outputDir, string $variableScope): bool
     {
         $this->info('Generating Postman collection...');
 
         $collectionName = $this->option('name') ?? config('app.name', 'API');
         $generator = new CollectionGenerator($collectionName);
+        $generator->setVariableScope($variableScope);
 
-        $this->configureApiVariables($generator);
+        $this->configureApiVariables($generator, $variableScope);
 
         $collection = $generator->generate($requests);
 
@@ -147,27 +154,19 @@ class ApiGenerateCommand extends Command
         return true;
     }
 
-    private function configureApiVariables(CollectionGenerator $generator): void
+    private function configureApiVariables(CollectionGenerator $generator, string $variableScope): void
     {
-        $apiDomain = config('app.api_domain');
+        if ($variableScope === 'collection') {
+            // Load variables from first environment config into collection variables
+            $environments = config('api-docs.environments', []);
+            $firstEnv = ! empty($environments) ? reset($environments) : [];
 
-        if (! $apiDomain) {
-            $host = parse_url((string) config('app.url'), PHP_URL_HOST) ?: 'localhost';
-            $apiDomain = "api.{$host}";
+            if (is_array($firstEnv) && count($firstEnv) > 0) {
+                $generator->setVariables($firstEnv);
+            }
         }
 
-        $scheme = parse_url((string) config('app.url'), PHP_URL_SCHEME) ?: 'https';
-
-        $generator->setVariables([
-            'API_URL' => "{$scheme}://{$apiDomain}",
-            'API_URL_V1' => "{$scheme}://{$apiDomain}/v1",
-            'BEARER_TOKEN' => '',
-            'PHONE' => '905050414874',
-            'OTP_CODE' => '',
-            'ORDER_UUID' => '',
-        ]);
-
-        // Add custom variables from config
+        // Always add custom variables from config
         $customVariables = config('api-docs.variables', []);
 
         foreach ($customVariables as $key => $value) {

@@ -285,6 +285,33 @@ public function show(User $user): JsonResponse
 public function profile(): JsonResponse
 ```
 
+### Using Resource in YAML
+
+Resource resolution also works in YAML definitions via the `resource` field:
+
+```yaml
+requests:
+  - name: Get User
+    method: GET
+    uri: /v1/users/{id}
+    resource: App\Http\Resources\UserResource
+    resource_status: 200
+    resource_wrapped: true
+
+  - name: List Users
+    method: GET
+    uri: /v1/users
+    resource: App\Http\Resources\UserResource
+    resource_collection: true
+```
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `resource` | `string` | `null` | Fully qualified Resource class name |
+| `resource_status` | `int` | `200` | HTTP status code for the response |
+| `resource_wrapped` | `bool` | auto-detected | Wrap in standard API response format |
+| `resource_collection` | `bool` | auto-detected | Return as array/collection |
+
 ---
 
 ## Authentication Auto-Detection

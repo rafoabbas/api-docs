@@ -15,6 +15,39 @@ composer require rafoabbas/api-docs
 
 ## Quick Start
 
+### Option 1: YAML Definitions (Recommended)
+
+Define API endpoints in YAML files under `resources/api-docs/`:
+
+```yaml
+# resources/api-docs/auth.yaml
+folder: V1 / Auth
+
+auth:
+  type: bearer
+
+requests:
+  - name: Login
+    method: POST
+    uri: /v1/auth/login
+    description: Authenticate user
+    auth:
+      type: noauth
+    body:
+      phone: "905551234567"
+      password: "secret123"
+    variables:
+      - name: BEARER_TOKEN
+        path: data.token
+
+  - name: Get Profile
+    method: GET
+    uri: /v1/auth/me
+    resource: App\Http\Resources\UserResource
+```
+
+### Option 2: PHP Attributes
+
 Add attributes to your controller:
 
 ```php
@@ -32,13 +65,22 @@ class AuthController extends Controller
 }
 ```
 
-Generate documentation:
+### Generate Documentation
 
 ```bash
 php artisan api:generate
 ```
 
-Output:
+Output (when `variable_scope` is `collection`):
+```
+docs/
+├── postman/
+│   └── {timestamp}-collection.json
+└── openapi/
+    └── {timestamp}-openapi.yaml
+```
+
+Output (when `variable_scope` is `environment`):
 ```
 docs/
 ├── postman/
@@ -85,6 +127,17 @@ php artisan api:generate --exclude=admin       # Exclude prefixes
 - **Authentication** from middleware (`auth:sanctum`, `auth`)
 - **Route parameters** from URI (`{id}` → `:id`)
 
+## Merging Strategy
+
+YAML and PHP attributes can be used together. When both define the same endpoint (matched by `method + uri`):
+
+- **YAML definitions take priority** over PHP attributes
+- Merge is done field-by-field (non-null YAML fields override attribute fields)
+- Unmatched requests from both sources are included
+- YAML `body_merge` and `body_except` allow merging YAML body with auto-resolved FormRequest body
+
+This allows a YAML-first workflow where controllers stay clean and all API documentation lives in YAML files.
+
 ## Swagger UI
 
 Interactive API documentation is available at `/api/docs` by default.
@@ -130,6 +183,12 @@ API_DOCS_SWAGGER_ENABLED=false
 - [x] Swagger UI integration - Interactive docs at `/api/docs`
 - [x] Query parameter auto-resolve from FormRequest for GET/DELETE requests
 - [x] Class-level `ApiPreRequest` support
+- [x] YAML-first workflow with priority merge
+- [x] YAML `resource` support for auto-resolving response from Resource classes
+- [x] YAML `body_merge` / `body_except` for merging with FormRequest body
+- [x] YAML `hidden` support to exclude requests from docs
+- [x] YAML file-level shared `auth`, `headers`, `pre_request_scripts`
+- [x] Configurable `variable_scope` (`collection` or `environment`)
 
 ### Export Formats
 - [ ] Markdown export

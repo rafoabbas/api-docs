@@ -16,6 +16,8 @@ final readonly class RequestData
      * @param  array<string, mixed>|null  $body  Request body
      * @param  string  $bodyMode  Body mode
      * @param  string  $bodyLanguage  Body language
+     * @param  bool  $bodyMerge  Merge body with FormRequest-resolved body
+     * @param  array<string>  $bodyExcept  Keys to exclude when merging body
      * @param  array<int, HeaderData>  $headers  Custom headers
      * @param  array<int, QueryParamData>  $queryParams  Query parameters
      * @param  array<int, ResponseData>  $responses  Example responses
@@ -24,6 +26,10 @@ final readonly class RequestData
      * @param  array<string>  $preRequestScripts  Pre-request scripts
      * @param  AuthData|null  $auth  Authentication config
      * @param  array<string>  $middleware  Route middleware
+     * @param  string|null  $resource  Resource class for auto-response resolution
+     * @param  int  $resourceStatus  HTTP status code for resource response
+     * @param  bool|null  $resourceWrapped  Wrap in ApiResponse format
+     * @param  bool|null  $resourceCollection  Return as collection
      */
     public function __construct(
         public string $name,
@@ -35,6 +41,8 @@ final readonly class RequestData
         public ?array $body = null,
         public string $bodyMode = 'raw',
         public string $bodyLanguage = 'json',
+        public bool $bodyMerge = false,
+        public array $bodyExcept = [],
         public array $headers = [],
         public array $queryParams = [],
         public array $responses = [],
@@ -43,5 +51,9 @@ final readonly class RequestData
         public array $preRequestScripts = [],
         public ?AuthData $auth = null,
         public array $middleware = [],
+        public ?string $resource = null,
+        public int $resourceStatus = 200,
+        public ?bool $resourceWrapped = null,
+        public ?bool $resourceCollection = null,
     ) {}
 }

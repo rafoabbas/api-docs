@@ -9,6 +9,6 @@ final readonly class VariableData
     public function __construct(
         public string $name,
         public string $path,
-        public string $scope = 'collection',
+        public string $scope = 'environment',
     ) {}
 }

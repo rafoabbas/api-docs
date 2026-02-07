@@ -98,10 +98,28 @@ final class YamlCollector
     {
         $requests = [];
         $folder = $content['folder'] ?? 'General';
+        $folderDescription = $content['description'] ?? null;
         $yamlRequests = $content['requests'] ?? [];
 
+        // File-level shared settings
+        $sharedAuth = $this->parseAuth($content['auth'] ?? null);
+        $sharedHeaders = $this->parseHeaders($content['headers'] ?? []);
+        $sharedPreRequestScripts = $content['pre_request_scripts'] ?? [];
+
         foreach ($yamlRequests as $index => $requestData) {
-            $request = $this->buildRequestData($requestData, $folder, $index);
+            // Skip hidden requests
+            if (! empty($requestData['hidden'])) {
+                continue;
+            }
+
+            $request = $this->buildRequestData(
+                $requestData,
+                $folder,
+                $index,
+                $sharedAuth,
+                $sharedHeaders,
+                $sharedPreRequestScripts,
+            );
 
             if ($request instanceof \ApiDocs\Data\RequestData) {
                 $requests[] = $request;
@@ -113,12 +131,31 @@ final class YamlCollector
 
     /**
      * @param  array<string, mixed>  $data
+     * @param  array<int, HeaderData>  $sharedHeaders
+     * @param  array<string>  $sharedPreRequestScripts
      */
-    private function buildRequestData(array $data, string $folder, int $index): ?RequestData
-    {
+    private function buildRequestData(
+        array $data,
+        string $folder,
+        int $index,
+        ?AuthData $sharedAuth,
+        array $sharedHeaders,
+        array $sharedPreRequestScripts,
+    ): ?RequestData {
         if (! isset($data['name'], $data['method'], $data['uri'])) {
             return null;
         }
+
+        // Merge request-level headers with shared headers
+        $requestHeaders = $this->parseHeaders($data['headers'] ?? []);
+        $headers = array_merge($sharedHeaders, $requestHeaders);
+
+        // Merge pre-request scripts
+        $requestScripts = $data['pre_request_scripts'] ?? [];
+        $preRequestScripts = array_merge($sharedPreRequestScripts, $requestScripts);
+
+        // Auth: request-level overrides shared
+        $auth = $this->parseAuth($data['auth'] ?? null) ?? $sharedAuth;
 
         return new RequestData(
             name: $data['name'],
@@ -130,14 +167,20 @@ final class YamlCollector
             body: $data['body'] ?? null,
             bodyMode: $data['body_mode'] ?? 'raw',
             bodyLanguage: $data['body_language'] ?? 'json',
-            headers: $this->parseHeaders($data['headers'] ?? []),
+            bodyMerge: $data['body_merge'] ?? false,
+            bodyExcept: $data['body_except'] ?? [],
+            headers: $headers,
             queryParams: $this->parseQueryParams($data['query_params'] ?? []),
             responses: $this->parseResponses($data['responses'] ?? []),
             variables: $this->parseVariables($data['variables'] ?? []),
             tests: $this->parseTests($data['tests'] ?? []),
-            preRequestScripts: $data['pre_request_scripts'] ?? [],
-            auth: $this->parseAuth($data['auth'] ?? null),
+            preRequestScripts: $preRequestScripts,
+            auth: $auth,
             middleware: $data['middleware'] ?? [],
+            resource: $data['resource'] ?? null,
+            resourceStatus: $data['resource_status'] ?? 200,
+            resourceWrapped: $data['resource_wrapped'] ?? null,
+            resourceCollection: $data['resource_collection'] ?? null,
         );
     }
 
@@ -235,7 +278,7 @@ final class YamlCollector
             $result[] = new VariableData(
                 name: $variable['name'],
                 path: $variable['path'],
-                scope: $variable['scope'] ?? 'collection',
+                scope: $variable['scope'] ?? 'environment',
             );
         }
 

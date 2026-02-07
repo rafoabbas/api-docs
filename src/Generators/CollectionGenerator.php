@@ -19,6 +19,8 @@ final class CollectionGenerator
     /** @var array<string, string> */
     private array $variables = [];
 
+    private string $variableScope = 'collection';
+
     /** @var array<string, string> */
     private array $defaultHeaders = [
         'Accept' => 'application/json',
@@ -54,6 +56,13 @@ final class CollectionGenerator
     public function addVariable(string $key, string $value): self
     {
         $this->variables[$key] = $value;
+
+        return $this;
+    }
+
+    public function setVariableScope(string $scope): self
+    {
+        $this->variableScope = $scope;
 
         return $this;
     }
@@ -605,7 +614,7 @@ final class CollectionGenerator
 
             $scripts[] = "if ({$accessPath}) {";
 
-            $setter = match ($variable->scope) {
+            $setter = match ($this->variableScope) {
                 'environment' => 'pm.environment.set',
                 'global' => 'pm.globals.set',
                 default => 'pm.collectionVariables.set',
