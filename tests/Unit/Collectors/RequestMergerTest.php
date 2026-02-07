@@ -54,7 +54,7 @@ it('merges non-conflicting requests from both sources', function (): void {
     expect($result)->toHaveCount(2);
 });
 
-it('gives priority to attribute requests over yaml requests', function (): void {
+it('gives priority to yaml requests over attribute requests', function (): void {
     $attributeRequests = [
         new RequestData(
             name: 'Attribute Version',
@@ -77,8 +77,8 @@ it('gives priority to attribute requests over yaml requests', function (): void 
     $result = $merger->merge($attributeRequests, $yamlRequests);
 
     expect($result)->toHaveCount(1);
-    expect($result[0]->name)->toBe('Attribute Version');
-    expect($result[0]->description)->toBe('From attributes');
+    expect($result[0]->name)->toBe('YAML Version');
+    expect($result[0]->description)->toBe('From YAML');
 });
 
 it('normalizes uri slashes for comparison', function (): void {
@@ -94,7 +94,7 @@ it('normalizes uri slashes for comparison', function (): void {
     $result = $merger->merge($attributeRequests, $yamlRequests);
 
     expect($result)->toHaveCount(1);
-    expect($result[0]->name)->toBe('Attr');
+    expect($result[0]->name)->toBe('YAML');
 });
 
 it('treats different methods as different endpoints', function (): void {
@@ -126,7 +126,7 @@ it('is case insensitive for http methods', function (): void {
     $result = $merger->merge($attributeRequests, $yamlRequests);
 
     expect($result)->toHaveCount(1);
-    expect($result[0]->name)->toBe('Attr');
+    expect($result[0]->name)->toBe('YAML');
 });
 
 it('handles complex merge scenario', function (): void {
@@ -148,10 +148,10 @@ it('handles complex merge scenario', function (): void {
     expect($result)->toHaveCount(5);
 
     $names = array_map(fn (\ApiDocs\Data\RequestData $r): string => $r->name, $result);
-    expect($names)->toContain('Attr GET users');
+    expect($names)->toContain('YAML GET users');
     expect($names)->toContain('Attr POST users');
     expect($names)->toContain('Attr GET products');
     expect($names)->toContain('YAML DELETE users');
     expect($names)->toContain('YAML GET orders');
-    expect($names)->not->toContain('YAML GET users');
+    expect($names)->not->toContain('Attr GET users');
 });

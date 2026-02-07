@@ -172,10 +172,12 @@ API_DOCS_SWAGGER_ENABLED=false
 
 ## Documentation
 
-- [Attributes](docs/attributes.md) - All attributes with examples
-- [Configuration](docs/configuration.md) - Config options
-- [YAML Definitions](docs/yaml-definitions.md) - YAML file format
-- [Auto-Resolve](docs/auto-resolve.md) - Auto-detection features
+Full documentation is available on the **[Wiki](https://github.com/rafoabbas/api-docs/wiki)**:
+
+- [Configuration](https://github.com/rafoabbas/api-docs/wiki/Configuration)
+- [Attributes](https://github.com/rafoabbas/api-docs/wiki/Attributes)
+- [YAML Definitions](https://github.com/rafoabbas/api-docs/wiki/YAML-Definitions)
+- [Auto-Resolve](https://github.com/rafoabbas/api-docs/wiki/Auto-Resolve)
 
 ## Roadmap
 
