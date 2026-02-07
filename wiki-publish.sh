@@ -2,7 +2,7 @@
 
 set -e
 
-REPO_URL="https://github.com/rafoabbas/api-docs.wiki.git"
+REPO_URL="git@github.com:rafoabbas/api-docs.wiki.git"
 WIKI_DIR="wiki"
 TEMP_DIR=$(mktemp -d)
 
