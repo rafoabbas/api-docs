@@ -406,3 +406,46 @@ class UserController extends Controller
 ```
 
 No parameters. Simply apply to exclude.
+
+---
+
+## ApiDeprecated
+
+Mark endpoints as deprecated. Can be applied to class or method.
+
+```php
+use ApiDocs\Attributes\ApiDeprecated;
+
+// Simple deprecation
+#[ApiDeprecated]
+public function oldIndex(): JsonResponse
+
+// With reason
+#[ApiDeprecated(reason: 'This endpoint will be removed in v3')]
+public function legacyUsers(): JsonResponse
+
+// With reason and replacement
+#[ApiDeprecated(
+    reason: 'Use the new paginated endpoint',
+    replacement: '/api/v2/users'
+)]
+public function oldUsers(): JsonResponse
+
+// Class-level: marks all endpoints in controller as deprecated
+#[ApiDeprecated(reason: 'V1 API is deprecated', replacement: '/api/v2')]
+class V1UserController extends Controller
+```
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `reason` | `?string` | `null` | Reason for deprecation |
+| `replacement` | `?string` | `null` | Suggested replacement endpoint |
+
+### Output
+
+**OpenAPI:**
+- Sets `deprecated: true` on the operation
+- Appends deprecation info to the operation description
+
+**Postman:**
+- Prepends `**DEPRECATED**` notice to the request description

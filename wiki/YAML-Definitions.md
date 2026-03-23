@@ -77,6 +77,9 @@ requests:
     folder: string         # Override file-level folder for this request
     order: int             # Order within folder (default: 0)
     hidden: bool           # Exclude this request from docs (default: false)
+    deprecated: bool       # Mark as deprecated (default: false)
+    deprecated_reason: string    # Reason for deprecation
+    deprecated_replacement: string  # Suggested replacement endpoint
 
     # Request body
     body:                  # Object with key-value pairs
@@ -356,6 +359,24 @@ When `body_merge: true`:
 1. Fields are auto-resolved from the route's FormRequest `rules()`
 2. Fields listed in `body_except` are removed
 3. YAML `body` values are merged in (YAML values override resolved values)
+
+### Deprecated Endpoints
+
+Mark endpoints as deprecated with optional reason and replacement:
+
+```yaml
+folder: V1 / Users
+
+requests:
+  - name: List Users (Legacy)
+    method: GET
+    uri: /v1/users
+    deprecated: true
+    deprecated_reason: Use the v2 paginated endpoint
+    deprecated_replacement: /v2/users
+```
+
+This adds `deprecated: true` in the OpenAPI spec and a deprecation notice in Postman.
 
 ### Hidden Requests
 

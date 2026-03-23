@@ -7,6 +7,11 @@ Generate **Postman Collections**, **OpenAPI 3.x specs**, and **Swagger UI** from
 - **PHP Attributes** - Define API docs directly in controller methods
 - **YAML Definitions** - Alternative/supplement to attributes
 - **Auto-Resolve** - Request body from FormRequest, response from Resource classes
+- **Validation Schema** - Convert Laravel validation rules to OpenAPI schema (`required|email` → `type: string, format: email`)
+- **Enum Support** - PHP Enum and `Rule::in()` to OpenAPI enum conversion
+- **File Upload** - Auto-detect `file`/`image`/`mimes` rules → `multipart/form-data`
+- **Pagination** - Auto-detect `paginate()` → paginated response schema with links/meta
+- **Deprecation** - `#[ApiDeprecated]` attribute with reason and replacement
 - **Postman Export** - Collections with variables, tests, pre-request scripts
 - **OpenAPI 3.x** - YAML or JSON output
 - **Swagger UI** - Built-in interactive documentation with dark mode

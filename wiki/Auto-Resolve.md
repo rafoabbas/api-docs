@@ -369,6 +369,251 @@ Path variables appear in Postman's URL params section for easy editing.
 
 ---
 
+## Validation Rules to OpenAPI Schema
+
+For POST/PUT/PATCH requests, the package converts Laravel validation rules to proper OpenAPI schema definitions. This produces more accurate schemas than simple data inference.
+
+### How It Works
+
+```php
+class CreateUserRequest extends FormRequest
+{
+    public function rules(): array
+    {
+        return [
+            'email' => 'required|email',
+            'password' => 'required|string|min:8|max:64',
+            'age' => 'nullable|integer|min:0|max:150',
+            'role' => 'required|in:admin,editor,viewer',
+            'avatar' => 'required|image',
+            'website' => 'url',
+        ];
+    }
+}
+```
+
+### Generated OpenAPI Schema
+
+```yaml
+type: object
+required:
+  - email
+  - password
+  - role
+  - avatar
+properties:
+  email:
+    type: string
+    format: email
+    example: user@example.com
+  password:
+    type: string
+    format: password
+    minLength: 8
+    maxLength: 64
+    example: password123
+  age:
+    type: integer
+    nullable: true
+    minimum: 0
+    maximum: 150
+    example: 25
+  role:
+    type: string
+    enum: [admin, editor, viewer]
+    example: admin
+  avatar:
+    type: string
+    format: binary
+    example: (binary)
+  website:
+    type: string
+    format: uri
+    example: https://example.com
+```
+
+### Supported Rule Conversions
+
+| Laravel Rule | OpenAPI Schema |
+|-------------|---------------|
+| `string` | `type: string` |
+| `integer`, `int` | `type: integer` |
+| `numeric` | `type: number` |
+| `boolean`, `bool` | `type: boolean` |
+| `array` | `type: array` |
+| `email` | `format: email` |
+| `url`, `active_url` | `format: uri` |
+| `uuid` | `format: uuid` |
+| `date` | `format: date` |
+| `date_format` (with time) | `format: date-time` |
+| `ip`, `ipv4` | `format: ipv4` |
+| `ipv6` | `format: ipv6` |
+| `file`, `image` | `format: binary` |
+| `mimes:`, `mimetypes:` | `format: binary` |
+| `required` | added to `required` array |
+| `nullable` | `nullable: true` |
+| `min:N` | `minLength` (string) / `minimum` (number) |
+| `max:N` | `maxLength` (string) / `maximum` (number) |
+| `between:min,max` | both min and max constraints |
+| `size:N` | exact size constraint |
+| `in:a,b,c` | `enum: [a, b, c]` |
+| `regex:/pattern/` | `pattern: pattern` |
+| `digits:N` | `pattern: ^\d{N}$` |
+| `digits_between:N,M` | `pattern: ^\d{N,M}$` |
+| password field name | `format: password` |
+
+---
+
+## PHP Enum to OpenAPI Enum
+
+PHP BackedEnum classes used in validation rules are automatically converted to OpenAPI enum definitions.
+
+### Supported Patterns
+
+```php
+use Illuminate\Validation\Rules\Enum;
+use Illuminate\Validation\Rule;
+
+// String-based in: rule
+'status' => 'required|in:pending,active,completed'
+
+// Rule::in() with values
+'role' => ['required', Rule::in(['admin', 'editor', 'viewer'])]
+
+// PHP Enum with Enum rule
+'status' => ['required', new Enum(OrderStatus::class)]
+```
+
+### BackedEnum Example
+
+```php
+enum OrderStatus: string
+{
+    case Pending = 'pending';
+    case Active = 'active';
+    case Completed = 'completed';
+}
+
+// In FormRequest
+'status' => ['required', new Enum(OrderStatus::class)]
+```
+
+Generated schema:
+```yaml
+status:
+  type: string
+  enum: [pending, active, completed]
+  example: pending
+```
+
+---
+
+## File Upload Auto-Detection
+
+When validation rules contain `file`, `image`, or `mimes:` rules, the package automatically:
+
+1. Sets the body mode to `multipart/form-data`
+2. Uses `format: binary` for file fields in OpenAPI schema
+3. Marks file fields as `type: file` in Postman formdata
+
+### How It Works
+
+```php
+class UploadRequest extends FormRequest
+{
+    public function rules(): array
+    {
+        return [
+            'title' => 'required|string|max:255',
+            'avatar' => 'required|image|max:2048',
+            'document' => 'file|mimes:pdf,doc',
+        ];
+    }
+}
+```
+
+### Generated OpenAPI
+
+```yaml
+requestBody:
+  content:
+    multipart/form-data:
+      schema:
+        type: object
+        required: [title, avatar]
+        properties:
+          title:
+            type: string
+            maxLength: 255
+          avatar:
+            type: string
+            format: binary
+          document:
+            type: string
+            format: binary
+```
+
+### Generated Postman
+
+```json
+{
+  "mode": "formdata",
+  "formdata": [
+    { "key": "title", "value": "Example Title", "type": "text" },
+    { "key": "avatar", "value": "", "type": "file" },
+    { "key": "document", "value": "", "type": "file" }
+  ]
+}
+```
+
+---
+
+## Pagination Auto-Detection
+
+The package detects paginated responses by analyzing method source code for `paginate()`, `simplePaginate()`, or `cursorPaginate()` calls.
+
+### Detected Patterns
+
+```php
+// LengthAwarePaginator
+return UserResource::collection($query->paginate(15));
+
+// SimplePaginator
+return UserResource::collection($query->simplePaginate(15));
+
+// CursorPaginator
+return UserResource::collection($query->cursorPaginate(15));
+```
+
+### Generated Response Structure
+
+When pagination is detected, the response includes standard Laravel pagination fields:
+
+```json
+{
+    "data": [
+        { "id": 1, "name": "Example Name", "email": "user@example.com" }
+    ],
+    "links": {
+        "first": "https://example.com/api/resource?page=1",
+        "last": "https://example.com/api/resource?page=1",
+        "prev": null,
+        "next": null
+    },
+    "meta": {
+        "current_page": 1,
+        "from": 1,
+        "last_page": 1,
+        "path": "https://example.com/api/resource",
+        "per_page": 15,
+        "to": 1,
+        "total": 1
+    }
+}
+```
+
+---
+
 ## Namespace Resolution
 
 The package resolves Resource class namespaces in this order:
