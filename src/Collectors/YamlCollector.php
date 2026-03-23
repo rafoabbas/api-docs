@@ -181,6 +181,9 @@ final class YamlCollector
             resourceStatus: $data['resource_status'] ?? 200,
             resourceWrapped: $data['resource_wrapped'] ?? null,
             resourceCollection: $data['resource_collection'] ?? null,
+            deprecated: ! empty($data['deprecated']),
+            deprecatedReason: $data['deprecated_reason'] ?? null,
+            deprecatedReplacement: $data['deprecated_replacement'] ?? null,
         );
     }
 

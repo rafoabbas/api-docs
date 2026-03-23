@@ -295,8 +295,27 @@ final class CollectionGenerator
             'response' => $this->buildResponses($request),
         ];
 
-        if ($request->description !== null) {
-            $item['request']['description'] = $request->description;
+        // Build description with deprecation notice
+        $description = $request->description;
+
+        if ($request->deprecated) {
+            $deprecationNote = '**DEPRECATED**';
+
+            if ($request->deprecatedReason !== null) {
+                $deprecationNote .= ': ' . $request->deprecatedReason;
+            }
+
+            if ($request->deprecatedReplacement !== null) {
+                $deprecationNote .= '. Use ' . $request->deprecatedReplacement . ' instead.';
+            }
+
+            $description = $description !== null
+                ? $deprecationNote . "\n\n" . $description
+                : $deprecationNote;
+        }
+
+        if ($description !== null) {
+            $item['request']['description'] = $description;
         }
 
         if ($request->auth instanceof \ApiDocs\Data\AuthData) {
@@ -460,11 +479,16 @@ final class CollectionGenerator
             return [
                 'mode' => 'formdata',
                 'formdata' => array_map(
-                    fn (string $key, mixed $value): array => [
-                        'key' => $key,
-                        'value' => is_array($value) ? json_encode($value) : (string) $value,
-                        'type' => 'text',
-                    ],
+                    function (string $key, mixed $value) use ($request): array {
+                        // Detect file fields from body schema
+                        $isFile = $this->isFileField($key, $request);
+
+                        return [
+                            'key' => $key,
+                            'value' => $isFile ? '' : (is_array($value) ? json_encode($value) : (string) $value),
+                            'type' => $isFile ? 'file' : 'text',
+                        ];
+                    },
                     array_keys($body),
                     array_values($body),
                 ),
@@ -487,6 +511,27 @@ final class CollectionGenerator
         }
 
         return null;
+    }
+
+    /**
+     * Check if a field is a file upload field based on body schema.
+     */
+    private function isFileField(string $key, RequestData $request): bool
+    {
+        if ($request->bodySchema === null) {
+            // Fallback: check if body value indicates a file
+            $value = $request->body[$key] ?? null;
+
+            return $value === '(file)' || $value === '(binary)';
+        }
+
+        $properties = $request->bodySchema['properties'] ?? [];
+
+        if (isset($properties[$key]['format'])) {
+            return $properties[$key]['format'] === 'binary';
+        }
+
+        return false;
     }
 
     /**

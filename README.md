@@ -118,6 +118,7 @@ php artisan api:generate --exclude=admin       # Exclude prefixes
 | `ApiTest` | Postman test scripts |
 | `ApiPreRequest` | Pre-request scripts |
 | `ApiHidden` | Exclude from docs |
+| `ApiDeprecated` | Mark endpoints as deprecated |
 
 ## Auto-Resolve Features
 
@@ -126,6 +127,10 @@ php artisan api:generate --exclude=admin       # Exclude prefixes
 - **Response structure** from Resource `toArray()`
 - **Authentication** from middleware (`auth:sanctum`, `auth`)
 - **Route parameters** from URI (`{id}` → `:id`)
+- **OpenAPI schema** from validation rules (`required|email` → `type: string, format: email`)
+- **PHP Enum** to OpenAPI enum conversion (via `Rule::in()` or `Enum` rule)
+- **File upload** auto-detection (`file`, `image`, `mimes:` → `multipart/form-data`)
+- **Pagination** auto-detection (`paginate()` → paginated response schema)
 
 ## Merging Strategy
 
@@ -191,6 +196,11 @@ Full documentation is available on the **[Wiki](https://github.com/rafoabbas/api
 - [x] YAML `hidden` support to exclude requests from docs
 - [x] YAML file-level shared `auth`, `headers`, `pre_request_scripts`
 - [x] Configurable `variable_scope` (`collection` or `environment`)
+- [x] Validation rules to OpenAPI schema (`required|email` → `type: string, format: email`)
+- [x] PHP Enum to OpenAPI enum conversion (via `Rule::in()` or `Enum` validation rule)
+- [x] `#[ApiDeprecated]` - Mark endpoints as deprecated (with reason and replacement)
+- [x] Pagination auto-detect (`paginate()` → paginated response schema with links/meta)
+- [x] File upload - Auto multipart/form-data support (`file`, `image`, `mimes:` rules)
 
 ### Export Formats
 - [ ] Markdown export
@@ -199,19 +209,14 @@ Full documentation is available on the **[Wiki](https://github.com/rafoabbas/api
 - [ ] Postman Cloud sync
 
 ### Schema & Validation
-- [ ] Validation rules to OpenAPI schema (`required|email` → `type: string, format: email`)
-- [ ] PHP Enum to OpenAPI enum conversion
 - [ ] JSON:API specification support
 
 ### Attributes
-- [ ] `#[ApiDeprecated]` - Mark endpoints as deprecated
 - [ ] `#[ApiRateLimit]` - Document rate limits
 - [ ] `#[ApiWebhook]` - Webhook documentation
 
 ### Auto-Detection
-- [ ] Pagination auto-detect (`LengthAwarePaginator` response)
 - [ ] Factory examples - Generate example data from Laravel factories
-- [ ] File upload - Better multipart/form-data support
 
 ### Authentication
 - [ ] OAuth2 flows documentation

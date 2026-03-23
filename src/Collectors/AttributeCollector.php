@@ -6,6 +6,7 @@ namespace ApiDocs\Collectors;
 
 use ApiDocs\Attributes\ApiAuth;
 use ApiDocs\Attributes\ApiBody;
+use ApiDocs\Attributes\ApiDeprecated;
 use ApiDocs\Attributes\ApiFolder;
 use ApiDocs\Attributes\ApiHeader;
 use ApiDocs\Attributes\ApiHidden;
@@ -27,6 +28,7 @@ use ApiDocs\Resolvers\BodyMergeResolver;
 use ApiDocs\Resolvers\QueryParamResolver;
 use ApiDocs\Resolvers\ResponseResolver;
 use ApiDocs\Resolvers\ReturnTypeResolver;
+use ApiDocs\Resolvers\ValidationSchemaResolver;
 use Illuminate\Routing\Route;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Str;
@@ -47,6 +49,8 @@ final class AttributeCollector
 
     private readonly ReturnTypeResolver $returnTypeResolver;
 
+    private readonly ValidationSchemaResolver $validationSchemaResolver;
+
     public function __construct(
         private readonly Router $router,
     ) {
@@ -54,6 +58,7 @@ final class AttributeCollector
         $this->queryParamResolver = new QueryParamResolver;
         $this->responseResolver = new ResponseResolver;
         $this->returnTypeResolver = new ReturnTypeResolver;
+        $this->validationSchemaResolver = new ValidationSchemaResolver;
     }
 
     /**
@@ -178,6 +183,8 @@ final class AttributeCollector
         $bodyAttr = $this->getAttribute($methodReflection, ApiBody::class);
         $authAttr = $this->getAttribute($methodReflection, ApiAuth::class)
             ?? $this->getAttribute($classReflection, ApiAuth::class);
+        $deprecatedAttr = $this->getAttribute($methodReflection, ApiDeprecated::class)
+            ?? $this->getAttribute($classReflection, ApiDeprecated::class);
 
         $name = $requestAttr?->name ?? $this->generateRequestName($route, $method);
         $description = $requestAttr?->description;
@@ -195,6 +202,24 @@ final class AttributeCollector
         $body = $this->bodyMergeResolver->resolve($methodReflection, $bodyAttr, $method);
         $bodyMode = $bodyAttr?->mode ?? 'raw';
         $bodyLanguage = $bodyAttr?->language ?? 'json';
+
+        // Resolve validation schema and file upload detection
+        $bodySchema = null;
+        $hasFileUpload = false;
+
+        if (in_array($method, ['POST', 'PUT', 'PATCH'])) {
+            $schemaResult = $this->validationSchemaResolver->resolve($methodReflection);
+
+            if ($schemaResult !== null) {
+                $bodySchema = $schemaResult['schema'];
+                $hasFileUpload = $schemaResult['hasFileUpload'];
+
+                // Auto-switch to formdata mode when file uploads are detected
+                if ($hasFileUpload && $bodyMode === 'raw') {
+                    $bodyMode = 'formdata';
+                }
+            }
+        }
 
         // Try to resolve response from ApiResource attribute
         $resourceAttr = $this->getAttribute($methodReflection, ApiResource::class);
@@ -219,13 +244,29 @@ final class AttributeCollector
         }
 
         // If no ApiResource and no ApiResponse, try auto-detect from return statement
+        $isPaginated = false;
+
         if ($resourceAttr === null && count($responses) === 0) {
             $returnInfo = $this->returnTypeResolver->resolve($methodReflection);
 
             if ($returnInfo !== null) {
                 $status = $returnInfo['type'] === 'api_response' && str_contains(strtolower($method), 'create') ? 201 : 200;
-                $responses[] = new ResponseData('Success', $status, $returnInfo['data']);
+                $isPaginated = $returnInfo['isPaginated'] ?? false;
+
+                if ($isPaginated) {
+                    $responses[] = new ResponseData('Success', $status, $this->buildPaginatedResponse(
+                        $returnInfo['data'],
+                        $returnInfo['wrapped'] ?? false,
+                    ));
+                } else {
+                    $responses[] = new ResponseData('Success', $status, $returnInfo['data']);
+                }
             }
+        }
+
+        // Detect pagination from method source if not already detected
+        if (! $isPaginated) {
+            $isPaginated = $this->detectPaginationFromMethod($methodReflection);
         }
 
         $auth = $authAttr !== null
@@ -257,7 +298,70 @@ final class AttributeCollector
             preRequestScripts: $preRequestScripts,
             auth: $auth,
             middleware: $route->middleware(),
+            deprecated: $deprecatedAttr !== null,
+            deprecatedReason: $deprecatedAttr?->reason,
+            deprecatedReplacement: $deprecatedAttr?->replacement,
+            bodySchema: $bodySchema,
+            hasFileUpload: $hasFileUpload,
+            isPaginated: $isPaginated,
         );
+    }
+
+    /**
+     * Build a paginated response structure.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    private function buildPaginatedResponse(array $data, bool $wrapped): array
+    {
+        $paginationMeta = [
+            'current_page' => 1,
+            'from' => 1,
+            'last_page' => 1,
+            'path' => 'https://example.com/api/resource',
+            'per_page' => 15,
+            'to' => 1,
+            'total' => 1,
+        ];
+
+        $paginationLinks = [
+            'first' => 'https://example.com/api/resource?page=1',
+            'last' => 'https://example.com/api/resource?page=1',
+            'prev' => null,
+            'next' => null,
+        ];
+
+        if ($wrapped) {
+            return [
+                'success' => true,
+                'status_code' => 200,
+                'message' => null,
+                'data' => array_is_list($data) ? $data : [$data],
+                'links' => $paginationLinks,
+                'meta' => $paginationMeta,
+            ];
+        }
+
+        return [
+            'data' => array_is_list($data) ? $data : [$data],
+            'links' => $paginationLinks,
+            'meta' => $paginationMeta,
+        ];
+    }
+
+    /**
+     * Detect if method uses pagination by analyzing the method source code.
+     */
+    private function detectPaginationFromMethod(ReflectionMethod $method): bool
+    {
+        $methodSource = $this->getMethodSource($method);
+
+        if ($methodSource === null) {
+            return false;
+        }
+
+        return (bool) preg_match('/->(?:paginate|simplePaginate|cursorPaginate)\s*\(/', $methodSource);
     }
 
     /**

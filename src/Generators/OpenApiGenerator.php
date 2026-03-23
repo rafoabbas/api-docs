@@ -181,6 +181,27 @@ final class OpenApiGenerator
             $operation['description'] = $request->description;
         }
 
+        if ($request->deprecated) {
+            $operation['deprecated'] = true;
+
+            // Add deprecation info to description
+            $deprecationNote = '';
+
+            if ($request->deprecatedReason !== null) {
+                $deprecationNote .= $request->deprecatedReason;
+            }
+
+            if ($request->deprecatedReplacement !== null) {
+                $deprecationNote .= ($deprecationNote !== '' ? '. ' : '') . 'Use ' . $request->deprecatedReplacement . ' instead.';
+            }
+
+            if ($deprecationNote !== '') {
+                $operation['description'] = ($operation['description'] ?? '') !== ''
+                    ? $operation['description'] . "\n\n**Deprecated:** " . $deprecationNote
+                    : '**Deprecated:** ' . $deprecationNote;
+            }
+        }
+
         // Path parameters
         $pathParams = $this->extractPathParameters($request->uri);
         $parameters = [];
@@ -211,7 +232,7 @@ final class OpenApiGenerator
         }
 
         // Request body
-        if (in_array($request->method, ['POST', 'PUT', 'PATCH']) && $request->body !== null) {
+        if (in_array($request->method, ['POST', 'PUT', 'PATCH']) && ($request->body !== null || $request->bodySchema !== null)) {
             $operation['requestBody'] = $this->buildRequestBody($request);
         }
 
@@ -297,22 +318,16 @@ final class OpenApiGenerator
     {
         $content = [];
 
-        if ($request->bodyMode === 'raw' && $request->bodyLanguage === 'json') {
-            $content['application/json'] = [
-                'schema' => $this->inferSchemaFromData($request->body ?? []),
-            ];
-        } elseif ($request->bodyMode === 'formdata') {
-            $content['multipart/form-data'] = [
-                'schema' => $this->inferSchemaFromData($request->body ?? []),
-            ];
+        // Use validation-derived schema when available, fallback to data inference
+        $schema = $request->bodySchema ?? $this->inferSchemaFromData($request->body ?? []);
+
+        // Determine content type based on body mode and file upload detection
+        if ($request->hasFileUpload || $request->bodyMode === 'formdata') {
+            $content['multipart/form-data'] = ['schema' => $schema];
         } elseif ($request->bodyMode === 'urlencoded') {
-            $content['application/x-www-form-urlencoded'] = [
-                'schema' => $this->inferSchemaFromData($request->body ?? []),
-            ];
+            $content['application/x-www-form-urlencoded'] = ['schema' => $schema];
         } else {
-            $content['application/json'] = [
-                'schema' => $this->inferSchemaFromData($request->body ?? []),
-            ];
+            $content['application/json'] = ['schema' => $schema];
         }
 
         return [

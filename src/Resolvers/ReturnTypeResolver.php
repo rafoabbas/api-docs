@@ -15,7 +15,7 @@ final readonly class ReturnTypeResolver
     /**
      * Resolve response from method's return statement.
      *
-     * @return array{type: string, data: array<string, mixed>, resourceClass: string|null, wrapped: bool}|null
+     * @return array{type: string, data: array<string, mixed>, resourceClass: string|null, wrapped: bool, isPaginated?: bool}|null
      */
     public function resolve(ReflectionMethod $method): ?array
     {
@@ -24,6 +24,8 @@ final readonly class ReturnTypeResolver
         if ($source === null) {
             return null;
         }
+
+        $isPaginated = $this->detectPagination($source);
 
         // Check for Resource::make(), new Resource(), or Resource::collection() return
         if ($resourceResult = $this->detectResourceReturn($source, $method)) {
@@ -35,11 +37,14 @@ final readonly class ReturnTypeResolver
                 'resourceClass' => $resourceResult['class'],
                 'wrapped' => false,
                 'isCollection' => $resourceResult['isCollection'],
+                'isPaginated' => $isPaginated,
             ];
         }
 
         // Check for ApiResponse::success() with Resource
         if ($result = $this->detectApiResponseWithResource($source, $method)) {
+            $result['isPaginated'] = $isPaginated;
+
             return $result;
         }
 
@@ -50,6 +55,7 @@ final readonly class ReturnTypeResolver
                 'data' => $data,
                 'resourceClass' => null,
                 'wrapped' => false,
+                'isPaginated' => false,
             ];
         }
 
@@ -60,10 +66,19 @@ final readonly class ReturnTypeResolver
                 'data' => $data,
                 'resourceClass' => null,
                 'wrapped' => false,
+                'isPaginated' => false,
             ];
         }
 
         return null;
+    }
+
+    /**
+     * Detect if the method uses pagination.
+     */
+    private function detectPagination(string $source): bool
+    {
+        return (bool) preg_match('/->(?:paginate|simplePaginate|cursorPaginate)\s*\(/', $source);
     }
 
     private function getMethodSource(ReflectionMethod $method): ?string

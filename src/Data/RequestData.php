@@ -30,6 +30,12 @@ final readonly class RequestData
      * @param  int  $resourceStatus  HTTP status code for resource response
      * @param  bool|null  $resourceWrapped  Wrap in ApiResponse format
      * @param  bool|null  $resourceCollection  Return as collection
+     * @param  bool  $deprecated  Whether endpoint is deprecated
+     * @param  string|null  $deprecatedReason  Reason for deprecation
+     * @param  string|null  $deprecatedReplacement  Suggested replacement endpoint
+     * @param  array<string, mixed>|null  $bodySchema  OpenAPI schema from validation rules
+     * @param  bool  $hasFileUpload  Whether request contains file uploads
+     * @param  bool  $isPaginated  Whether response is paginated
      */
     public function __construct(
         public string $name,
@@ -55,5 +61,11 @@ final readonly class RequestData
         public int $resourceStatus = 200,
         public ?bool $resourceWrapped = null,
         public ?bool $resourceCollection = null,
+        public bool $deprecated = false,
+        public ?string $deprecatedReason = null,
+        public ?string $deprecatedReplacement = null,
+        public ?array $bodySchema = null,
+        public bool $hasFileUpload = false,
+        public bool $isPaginated = false,
     ) {}
 }

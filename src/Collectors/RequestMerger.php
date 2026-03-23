@@ -98,6 +98,12 @@ final class RequestMerger
             preRequestScripts: count($yaml->preRequestScripts) > 0 ? $yaml->preRequestScripts : $attr->preRequestScripts,
             auth: $yaml->auth ?? $attr->auth,
             middleware: $attr->middleware, // Always from route
+            deprecated: $yaml->deprecated || $attr->deprecated,
+            deprecatedReason: $yaml->deprecatedReason ?? $attr->deprecatedReason,
+            deprecatedReplacement: $yaml->deprecatedReplacement ?? $attr->deprecatedReplacement,
+            bodySchema: $attr->bodySchema, // Always from attribute (validation rules)
+            hasFileUpload: $attr->hasFileUpload,
+            isPaginated: $attr->isPaginated,
         );
     }
 
