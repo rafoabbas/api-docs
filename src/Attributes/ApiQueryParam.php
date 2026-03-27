@@ -7,7 +7,7 @@ namespace ApiDocs\Attributes;
 use Attribute;
 
 #[Attribute(Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
-final readonly class ApiQueryParam
+final class ApiQueryParam
 {
     /**
      * @param  string  $key  Query parameter key
@@ -16,9 +16,9 @@ final readonly class ApiQueryParam
      * @param  bool  $disabled  Whether parameter is disabled by default
      */
     public function __construct(
-        public string $key,
-        public string $value = '',
-        public ?string $description = null,
-        public bool $disabled = false,
+        public readonly string $key,
+        public readonly string $value = '',
+        public readonly ?string $description = null,
+        public readonly bool $disabled = false,
     ) {}
 }

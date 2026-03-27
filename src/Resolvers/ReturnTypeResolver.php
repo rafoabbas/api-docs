@@ -6,10 +6,10 @@ namespace ApiDocs\Resolvers;
 
 use ReflectionMethod;
 
-final readonly class ReturnTypeResolver
+final class ReturnTypeResolver
 {
     public function __construct(
-        private ResponseResolver $responseResolver = new ResponseResolver,
+        private readonly ResponseResolver $responseResolver = new ResponseResolver,
     ) {}
 
     /**

@@ -62,7 +62,7 @@ it('can create a request data with all parameters', function (): void {
     expect($request->middleware)->toContain('auth:sanctum');
 });
 
-it('is readonly', function (): void {
+it('has readonly properties', function (): void {
     $request = new RequestData(
         name: 'Test',
         method: 'GET',
@@ -71,5 +71,8 @@ it('is readonly', function (): void {
 
     $reflection = new ReflectionClass($request);
 
-    expect($reflection->isReadOnly())->toBeTrue();
+    foreach ($reflection->getConstructor()->getParameters() as $param) {
+        $property = $reflection->getProperty($param->getName());
+        expect($property->isReadOnly())->toBeTrue("Property {$param->getName()} should be readonly");
+    }
 });

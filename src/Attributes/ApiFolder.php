@@ -7,7 +7,7 @@ namespace ApiDocs\Attributes;
 use Attribute;
 
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD)]
-final readonly class ApiFolder
+final class ApiFolder
 {
     /**
      * @param  string  $name  Folder name (supports nested: "Auth / OTP")
@@ -15,8 +15,8 @@ final readonly class ApiFolder
      * @param  int  $order  Order of folder (lower = first)
      */
     public function __construct(
-        public string $name,
-        public ?string $description = null,
-        public int $order = 0,
+        public readonly string $name,
+        public readonly ?string $description = null,
+        public readonly int $order = 0,
     ) {}
 }

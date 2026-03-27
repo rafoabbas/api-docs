@@ -12,6 +12,13 @@ use ReflectionNamedType;
 
 final class BodyResolver
 {
+    private readonly ExampleValueGenerator $exampleValueGenerator;
+
+    public function __construct()
+    {
+        $this->exampleValueGenerator = new ExampleValueGenerator;
+    }
+
     /**
      * Resolve body data from a controller method's FormRequest parameter.
      *
@@ -134,7 +141,7 @@ final class BodyResolver
                 continue;
             }
 
-            $value = $this->guessStringValue($field, []);
+            $value = $this->exampleValueGenerator->string($field);
             $this->setNestedValue($body, $field, $value);
         }
 
@@ -180,12 +187,12 @@ final class BodyResolver
 
         // Check for integer
         if (in_array('integer', $rulesArray) || in_array('int', $rulesArray)) {
-            return $this->guessIntegerValue($field);
+            return $this->exampleValueGenerator->integer($field);
         }
 
         // Check for numeric
         if (in_array('numeric', $rulesArray)) {
-            return $this->guessNumericValue($field);
+            return $this->exampleValueGenerator->numeric($field);
         }
 
         // Check for file/image
@@ -199,7 +206,7 @@ final class BodyResolver
         }
 
         // Default to string - try to guess a sensible value
-        return $this->guessStringValue($field, $rulesArray);
+        return $this->exampleValueGenerator->string($field, $rulesArray);
     }
 
     /**
@@ -218,112 +225,6 @@ final class BodyResolver
         }
 
         return [$rules];
-    }
-
-    /**
-     * Guess a string value based on field name.
-     *
-     * @param  array<int, mixed>  $rules
-     */
-    private function guessStringValue(string $field, array $rules): string
-    {
-        $fieldLower = Str::lower($field);
-        $fieldSnake = Str::snake($field);
-
-        // Check for common field patterns
-        $patterns = [
-            'email' => 'user@example.com',
-            'phone' => '+905551234567',
-            'password' => 'password123',
-            'name' => 'John Doe',
-            'first_name' => 'John',
-            'last_name' => 'Doe',
-            'username' => 'johndoe',
-            'title' => 'Example Title',
-            'description' => 'Example description text',
-            'address' => '123 Main Street',
-            'city' => 'Istanbul',
-            'country' => 'Turkey',
-            'zip' => '34000',
-            'postal_code' => '34000',
-            'url' => 'https://example.com',
-            'website' => 'https://example.com',
-            'token' => 'abc123token',
-            'otp' => '123456',
-            'otp_code' => '123456',
-            'code' => '123456',
-            'uuid' => '550e8400-e29b-41d4-a716-446655440000',
-            'order_quote_id' => '550e8400-e29b-41d4-a716-446655440000',
-        ];
-
-        foreach ($patterns as $pattern => $value) {
-            if (Str::contains($fieldLower, $pattern) || Str::contains($fieldSnake, $pattern)) {
-                return $value;
-            }
-        }
-
-        // Check if it's an enum (has 'in:' rule)
-        foreach ($rules as $rule) {
-            if (is_string($rule) && Str::startsWith($rule, 'in:')) {
-                $options = explode(',', Str::after($rule, 'in:'));
-
-                return $options[0] ?? 'value';
-            }
-        }
-
-        return 'string_value';
-    }
-
-    /**
-     * Guess an integer value based on field name.
-     */
-    private function guessIntegerValue(string $field): int
-    {
-        $fieldLower = Str::lower($field);
-
-        if (Str::contains($fieldLower, ['id', 'count', 'quantity', 'qty'])) {
-            return 1;
-        }
-
-        if (Str::contains($fieldLower, ['page'])) {
-            return 1;
-        }
-
-        if (Str::contains($fieldLower, ['per_page', 'limit'])) {
-            return 10;
-        }
-
-        if (Str::contains($fieldLower, ['age'])) {
-            return 25;
-        }
-
-        return 1;
-    }
-
-    /**
-     * Guess a numeric value based on field name.
-     */
-    private function guessNumericValue(string $field): float|int
-    {
-        $fieldLower = Str::lower($field);
-
-        if (Str::contains($fieldLower, ['price', 'amount', 'total', 'cost'])) {
-            return 99.99;
-        }
-
-        if (Str::contains($fieldLower, ['lat', 'latitude'])) {
-            return 41.0082;
-        }
-
-        if (Str::contains($fieldLower, ['lng', 'lon', 'longitude'])) {
-            return 28.9784;
-        }
-
-        if (Str::contains($fieldLower, ['percent', 'rate'])) {
-            return 10.5;
-        }
-
-        return 0;
     }
 
     /**

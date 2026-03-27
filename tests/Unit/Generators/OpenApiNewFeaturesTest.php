@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use ApiDocs\Data\RequestData;
-use ApiDocs\Data\ResponseData;
 use ApiDocs\Generators\OpenApiGenerator;
 
 it('adds deprecated flag to operation', function (): void {

@@ -7,10 +7,10 @@ namespace ApiDocs\Resolvers;
 use ApiDocs\Attributes\ApiBody;
 use ReflectionMethod;
 
-final readonly class BodyMergeResolver
+final class BodyMergeResolver
 {
     public function __construct(
-        private BodyResolver $bodyResolver = new BodyResolver,
+        private readonly BodyResolver $bodyResolver = new BodyResolver,
     ) {}
 
     /**

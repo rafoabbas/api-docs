@@ -7,7 +7,7 @@ namespace ApiDocs\Attributes;
 use Attribute;
 
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD)]
-final readonly class ApiAuth
+final class ApiAuth
 {
     public const TYPE_BEARER = 'bearer';
 
@@ -26,11 +26,11 @@ final readonly class ApiAuth
      * @param  string|null  $apiKeyHeader  API key header name
      */
     public function __construct(
-        public string $type = self::TYPE_BEARER,
-        public ?string $token = '{{BEARER_TOKEN}}',
-        public ?string $username = null,
-        public ?string $password = null,
-        public ?string $apiKey = null,
-        public ?string $apiKeyHeader = 'X-API-Key',
+        public readonly string $type = self::TYPE_BEARER,
+        public readonly ?string $token = '{{BEARER_TOKEN}}',
+        public readonly ?string $username = null,
+        public readonly ?string $password = null,
+        public readonly ?string $apiKey = null,
+        public readonly ?string $apiKeyHeader = 'X-API-Key',
     ) {}
 }

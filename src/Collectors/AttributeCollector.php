@@ -41,25 +41,14 @@ final class AttributeCollector
     /** @var array<string> */
     private array $excludePrefixes = ['_', 'sanctum', 'telescope', 'storage', 'mcp'];
 
-    private readonly BodyMergeResolver $bodyMergeResolver;
-
-    private readonly QueryParamResolver $queryParamResolver;
-
-    private readonly ResponseResolver $responseResolver;
-
-    private readonly ReturnTypeResolver $returnTypeResolver;
-
-    private readonly ValidationSchemaResolver $validationSchemaResolver;
-
     public function __construct(
         private readonly Router $router,
-    ) {
-        $this->bodyMergeResolver = new BodyMergeResolver;
-        $this->queryParamResolver = new QueryParamResolver;
-        $this->responseResolver = new ResponseResolver;
-        $this->returnTypeResolver = new ReturnTypeResolver;
-        $this->validationSchemaResolver = new ValidationSchemaResolver;
-    }
+        private readonly BodyMergeResolver $bodyMergeResolver = new BodyMergeResolver,
+        private readonly QueryParamResolver $queryParamResolver = new QueryParamResolver,
+        private readonly ResponseResolver $responseResolver = new ResponseResolver,
+        private readonly ReturnTypeResolver $returnTypeResolver = new ReturnTypeResolver,
+        private readonly ValidationSchemaResolver $validationSchemaResolver = new ValidationSchemaResolver,
+    ) {}
 
     /**
      * @param  array<string>  $prefixes

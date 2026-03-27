@@ -7,7 +7,7 @@ namespace ApiDocs\Attributes;
 use Attribute;
 
 #[Attribute(Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
-final readonly class ApiBody
+final class ApiBody
 {
     public const MODE_RAW = 'raw';
 
@@ -23,10 +23,10 @@ final readonly class ApiBody
      * @param  array<string>  $except  Keys to exclude from auto-resolved FormRequest body
      */
     public function __construct(
-        public array $data = [],
-        public string $mode = self::MODE_RAW,
-        public string $language = 'json',
-        public bool $merge = false,
-        public array $except = [],
+        public readonly array $data = [],
+        public readonly string $mode = self::MODE_RAW,
+        public readonly string $language = 'json',
+        public readonly bool $merge = false,
+        public readonly array $except = [],
     ) {}
 }

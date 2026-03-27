@@ -13,6 +13,13 @@ use ReflectionNamedType;
 
 final class QueryParamResolver
 {
+    private readonly ExampleValueGenerator $exampleValueGenerator;
+
+    public function __construct()
+    {
+        $this->exampleValueGenerator = new ExampleValueGenerator;
+    }
+
     /**
      * Resolve query parameters from a controller method's FormRequest parameter.
      *
@@ -125,7 +132,7 @@ final class QueryParamResolver
                 continue;
             }
 
-            $value = $this->guessStringValue($field, []);
+            $value = $this->exampleValueGenerator->string($field);
             $params[] = new QueryParamData(
                 key: $field,
                 value: (string) $value,
@@ -182,18 +189,18 @@ final class QueryParamResolver
         }
 
         if (in_array('integer', $rulesArray) || in_array('int', $rulesArray)) {
-            return $this->guessIntegerValue($field);
+            return $this->exampleValueGenerator->integer($field);
         }
 
         if (in_array('numeric', $rulesArray)) {
-            return $this->guessNumericValue($field);
+            return $this->exampleValueGenerator->numeric($field);
         }
 
         if (in_array('date', $rulesArray) || Str::contains($rulesString, 'date_format')) {
             return '2024-01-15';
         }
 
-        return $this->guessStringValue($field, $rulesArray);
+        return $this->exampleValueGenerator->string($field, $rulesArray);
     }
 
     /**
@@ -212,90 +219,5 @@ final class QueryParamResolver
         }
 
         return [$rules];
-    }
-
-    /**
-     * Guess a string value based on field name.
-     *
-     * @param  array<int, mixed>  $rules
-     */
-    private function guessStringValue(string $field, array $rules): string
-    {
-        $fieldLower = Str::lower($field);
-        $fieldSnake = Str::snake($field);
-
-        $patterns = [
-            'query' => 'search term',
-            'search' => 'search term',
-            'q' => 'search term',
-            'email' => 'user@example.com',
-            'phone' => '+905551234567',
-            'name' => 'John Doe',
-            'token' => 'abc123token',
-            'session_token' => 'session_abc123',
-            'place_id' => 'ChIJN1t_tDeuEmsRUsoyG83frY4',
-            'uuid' => '550e8400-e29b-41d4-a716-446655440000',
-        ];
-
-        foreach ($patterns as $pattern => $value) {
-            if (Str::contains($fieldLower, $pattern) || Str::contains($fieldSnake, $pattern)) {
-                return $value;
-            }
-        }
-
-        foreach ($rules as $rule) {
-            if (is_string($rule) && Str::startsWith($rule, 'in:')) {
-                $options = explode(',', Str::after($rule, 'in:'));
-
-                return $options[0] ?? 'value';
-            }
-        }
-
-        return 'value';
-    }
-
-    /**
-     * Guess an integer value based on field name.
-     */
-    private function guessIntegerValue(string $field): int
-    {
-        $fieldLower = Str::lower($field);
-
-        if (Str::contains($fieldLower, ['id', 'count', 'quantity', 'qty'])) {
-            return 1;
-        }
-
-        // Check per_page/limit before page (since per_page contains 'page')
-        if (Str::contains($fieldLower, ['per_page', 'limit'])) {
-            return 10;
-        }
-
-        if (Str::contains($fieldLower, ['page'])) {
-            return 1;
-        }
-
-        return 1;
-    }
-
-    /**
-     * Guess a numeric value based on field name.
-     */
-    private function guessNumericValue(string $field): float|int
-    {
-        $fieldLower = Str::lower($field);
-
-        if (Str::contains($fieldLower, ['lat', 'latitude'])) {
-            return 41.0082;
-        }
-
-        if (Str::contains($fieldLower, ['lng', 'lon', 'longitude'])) {
-            return 28.9784;
-        }
-
-        if (Str::contains($fieldLower, ['price', 'amount', 'total', 'cost'])) {
-            return 99.99;
-        }
-
-        return 0;
     }
 }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ApiDocs\Data;
 
-final readonly class ResponseData
+final class ResponseData
 {
     /**
      * @param  string  $name  Response example name
@@ -13,9 +13,9 @@ final readonly class ResponseData
      * @param  array<string, string>  $headers  Response headers
      */
     public function __construct(
-        public string $name,
-        public int $status = 200,
-        public array $body = [],
-        public array $headers = [],
+        public readonly string $name,
+        public readonly int $status = 200,
+        public readonly array $body = [],
+        public readonly array $headers = [],
     ) {}
 }

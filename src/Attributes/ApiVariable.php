@@ -7,7 +7,7 @@ namespace ApiDocs\Attributes;
 use Attribute;
 
 #[Attribute(Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
-final readonly class ApiVariable
+final class ApiVariable
 {
     /**
      * @param  string  $name  Variable name to set (e.g., BEARER_TOKEN)
@@ -15,8 +15,8 @@ final readonly class ApiVariable
      * @param  string  $scope  Variable scope: environment, collection, global
      */
     public function __construct(
-        public string $name,
-        public string $path,
-        public string $scope = 'environment',
+        public readonly string $name,
+        public readonly string $path,
+        public readonly string $scope = 'environment',
     ) {}
 }

@@ -8,7 +8,7 @@ use Attribute;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 #[Attribute(Attribute::TARGET_METHOD)]
-final readonly class ApiResource
+final class ApiResource
 {
     /**
      * @param  class-string<JsonResource>  $resourceClass  The Resource class to use for response structure
@@ -17,9 +17,9 @@ final readonly class ApiResource
      * @param  bool|null  $collection  Whether the response is a collection (null = auto-detect from method body)
      */
     public function __construct(
-        public string $resourceClass,
-        public ?bool $wrapped = null,
-        public int $status = 200,
-        public ?bool $collection = null,
+        public readonly string $resourceClass,
+        public readonly ?bool $wrapped = null,
+        public readonly int $status = 200,
+        public readonly ?bool $collection = null,
     ) {}
 }

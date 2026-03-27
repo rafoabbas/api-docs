@@ -4,7 +4,9 @@
       "Bash(./vendor/bin/pest:*)",
       "WebSearch",
       "WebFetch(domain:github.com)",
-      "WebFetch(domain:php.watch)"
+      "WebFetch(domain:php.watch)",
+      "Bash(git -C /Users/rauf/Sites/api-docs config --local -l)",
+      "Bash(./vendor/bin/pint:*)"
     ]
   }
 }

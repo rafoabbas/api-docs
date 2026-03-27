@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ApiDocs\Data;
 
-final readonly class RequestData
+final class RequestData
 {
     /**
      * @param  string  $name  Request name
@@ -38,34 +38,34 @@ final readonly class RequestData
      * @param  bool  $isPaginated  Whether response is paginated
      */
     public function __construct(
-        public string $name,
-        public string $method,
-        public string $uri,
-        public ?string $description = null,
-        public string $folder = 'General',
-        public int $order = 0,
-        public ?array $body = null,
-        public string $bodyMode = 'raw',
-        public string $bodyLanguage = 'json',
-        public bool $bodyMerge = false,
-        public array $bodyExcept = [],
-        public array $headers = [],
-        public array $queryParams = [],
-        public array $responses = [],
-        public array $variables = [],
-        public array $tests = [],
-        public array $preRequestScripts = [],
-        public ?AuthData $auth = null,
-        public array $middleware = [],
-        public ?string $resource = null,
-        public int $resourceStatus = 200,
-        public ?bool $resourceWrapped = null,
-        public ?bool $resourceCollection = null,
-        public bool $deprecated = false,
-        public ?string $deprecatedReason = null,
-        public ?string $deprecatedReplacement = null,
-        public ?array $bodySchema = null,
-        public bool $hasFileUpload = false,
-        public bool $isPaginated = false,
+        public readonly string $name,
+        public readonly string $method,
+        public readonly string $uri,
+        public readonly ?string $description = null,
+        public readonly string $folder = 'General',
+        public readonly int $order = 0,
+        public readonly ?array $body = null,
+        public readonly string $bodyMode = 'raw',
+        public readonly string $bodyLanguage = 'json',
+        public readonly bool $bodyMerge = false,
+        public readonly array $bodyExcept = [],
+        public readonly array $headers = [],
+        public readonly array $queryParams = [],
+        public readonly array $responses = [],
+        public readonly array $variables = [],
+        public readonly array $tests = [],
+        public readonly array $preRequestScripts = [],
+        public readonly ?AuthData $auth = null,
+        public readonly array $middleware = [],
+        public readonly ?string $resource = null,
+        public readonly int $resourceStatus = 200,
+        public readonly ?bool $resourceWrapped = null,
+        public readonly ?bool $resourceCollection = null,
+        public readonly bool $deprecated = false,
+        public readonly ?string $deprecatedReason = null,
+        public readonly ?string $deprecatedReplacement = null,
+        public readonly ?array $bodySchema = null,
+        public readonly bool $hasFileUpload = false,
+        public readonly bool $isPaginated = false,
     ) {}
 }

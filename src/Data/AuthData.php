@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace ApiDocs\Data;
 
-final readonly class AuthData
+final class AuthData
 {
     public function __construct(
-        public string $type = 'bearer',
-        public ?string $token = '{{BEARER_TOKEN}}',
-        public ?string $username = null,
-        public ?string $password = null,
-        public ?string $apiKey = null,
-        public ?string $apiKeyHeader = 'X-API-Key',
+        public readonly string $type = 'bearer',
+        public readonly ?string $token = '{{BEARER_TOKEN}}',
+        public readonly ?string $username = null,
+        public readonly ?string $password = null,
+        public readonly ?string $apiKey = null,
+        public readonly ?string $apiKeyHeader = 'X-API-Key',
     ) {}
 }

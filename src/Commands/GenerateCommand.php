@@ -8,6 +8,9 @@ use ApiDocs\Collectors\AttributeCollector;
 use ApiDocs\Generators\CollectionGenerator;
 use Illuminate\Console\Command;
 
+/**
+ * @deprecated Use ApiGenerateCommand (api:generate) instead.
+ */
 class GenerateCommand extends Command
 {
     protected $signature = 'postman:generate

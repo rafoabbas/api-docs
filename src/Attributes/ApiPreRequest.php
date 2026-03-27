@@ -7,12 +7,12 @@ namespace ApiDocs\Attributes;
 use Attribute;
 
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
-final readonly class ApiPreRequest
+final class ApiPreRequest
 {
     /**
      * @param  string  $script  JavaScript pre-request script
      */
     public function __construct(
-        public string $script,
+        public readonly string $script,
     ) {}
 }

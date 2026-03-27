@@ -12,6 +12,13 @@ use ReflectionNamedType;
 
 final class ValidationSchemaResolver
 {
+    private readonly ExampleValueGenerator $exampleValueGenerator;
+
+    public function __construct()
+    {
+        $this->exampleValueGenerator = new ExampleValueGenerator;
+    }
+
     /**
      * Resolve OpenAPI schema from a controller method's FormRequest.
      *
@@ -459,11 +466,11 @@ final class ValidationSchemaResolver
         }
 
         if ($type === 'integer') {
-            return $this->guessIntegerExample($field);
+            return $this->exampleValueGenerator->integer($field);
         }
 
         if ($type === 'number') {
-            return $this->guessNumericExample($field);
+            return $this->exampleValueGenerator->numeric($field);
         }
 
         if ($type === 'array') {
@@ -471,44 +478,6 @@ final class ValidationSchemaResolver
         }
 
         return $this->guessStringExample($field, $rules);
-    }
-
-    private function guessIntegerExample(string $field): int
-    {
-        $lower = Str::lower($field);
-
-        if (Str::contains($lower, ['per_page', 'limit'])) {
-            return 10;
-        }
-
-        if (Str::contains($lower, ['page'])) {
-            return 1;
-        }
-
-        if (Str::contains($lower, ['age'])) {
-            return 25;
-        }
-
-        return 1;
-    }
-
-    private function guessNumericExample(string $field): float|int
-    {
-        $lower = Str::lower($field);
-
-        if (Str::contains($lower, ['price', 'amount', 'total', 'cost'])) {
-            return 99.99;
-        }
-
-        if (Str::contains($lower, ['lat', 'latitude'])) {
-            return 41.0082;
-        }
-
-        if (Str::contains($lower, ['lng', 'lon', 'longitude'])) {
-            return 28.9784;
-        }
-
-        return 0;
     }
 
     /**
@@ -532,33 +501,7 @@ final class ValidationSchemaResolver
             return '(binary)';
         }
 
-        $lower = Str::lower($field);
-        $snake = Str::snake($field);
-
-        $patterns = [
-            'email' => 'user@example.com',
-            'phone' => '+905551234567',
-            'password' => 'password123',
-            'name' => 'John Doe',
-            'first_name' => 'John',
-            'last_name' => 'Doe',
-            'title' => 'Example Title',
-            'description' => 'Example description',
-            'address' => '123 Main Street',
-            'city' => 'Istanbul',
-            'country' => 'Turkey',
-            'url' => 'https://example.com',
-            'token' => 'abc123token',
-            'uuid' => '550e8400-e29b-41d4-a716-446655440000',
-        ];
-
-        foreach ($patterns as $pattern => $value) {
-            if (Str::contains($lower, $pattern) || Str::contains($snake, $pattern)) {
-                return $value;
-            }
-        }
-
-        return 'string';
+        return $this->exampleValueGenerator->string($field, $rules);
     }
 
     /**

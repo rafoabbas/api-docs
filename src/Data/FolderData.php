@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace ApiDocs\Data;
 
-final readonly class FolderData
+final class FolderData
 {
     public function __construct(
-        public string $name,
-        public ?string $description = null,
-        public int $order = 0,
+        public readonly string $name,
+        public readonly ?string $description = null,
+        public readonly int $order = 0,
     ) {}
 }

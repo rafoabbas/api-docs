@@ -7,7 +7,7 @@ namespace ApiDocs\Attributes;
 use Attribute;
 
 #[Attribute(Attribute::TARGET_METHOD)]
-final readonly class ApiRequest
+final class ApiRequest
 {
     /**
      * @param  string|null  $name  Request name in Postman
@@ -15,8 +15,8 @@ final readonly class ApiRequest
      * @param  int  $order  Order within folder (lower = first)
      */
     public function __construct(
-        public ?string $name = null,
-        public ?string $description = null,
-        public int $order = 0,
+        public readonly ?string $name = null,
+        public readonly ?string $description = null,
+        public readonly int $order = 0,
     ) {}
 }

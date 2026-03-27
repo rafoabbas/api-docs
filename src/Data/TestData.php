@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace ApiDocs\Data;
 
-final readonly class TestData
+final class TestData
 {
     public function __construct(
-        public string $script,
-        public ?string $name = null,
+        public readonly string $script,
+        public readonly ?string $name = null,
     ) {}
 }
