@@ -1,7 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(./vendor/bin/pest:*)"
+      "Bash(./vendor/bin/pest:*)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:php.watch)"
     ]
   }
 }

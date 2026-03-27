@@ -254,16 +254,17 @@ final class ValidationSchemaResolver
             }
 
             if (is_object($rule)) {
-                // Skip objects that can't be cast to string (e.g. ConditionalRules)
-                if (! method_exists($rule, '__toString')) {
-                    if ($rule instanceof \Illuminate\Validation\Rules\Enum) {
-                        $enumValues = $this->extractEnumValues($rule);
+                // Illuminate\Validation\Rules\Enum → extract values via reflection
+                if ($rule instanceof \Illuminate\Validation\Rules\Enum) {
+                    $enumValues = $this->extractEnumValues($rule);
 
-                        if ($enumValues !== null) {
-                            return $enumValues;
-                        }
+                    if ($enumValues !== null) {
+                        return $enumValues;
                     }
+                }
 
+                // Skip objects without __toString (Password, File, etc.)
+                if (! method_exists($rule, '__toString')) {
                     continue;
                 }
 
@@ -274,15 +275,6 @@ final class ValidationSchemaResolver
                     $values = explode(',', Str::after($ruleString, 'in:'));
 
                     return array_map(fn ($v): string => trim($v, '"\''), $values);
-                }
-
-                // Illuminate\Validation\Rules\Enum
-                if ($rule instanceof \Illuminate\Validation\Rules\Enum) {
-                    $enumValues = $this->extractEnumValues($rule);
-
-                    if ($enumValues !== null) {
-                        return $enumValues;
-                    }
                 }
             }
         }
@@ -579,10 +571,59 @@ final class ValidationSchemaResolver
         }
 
         if (is_array($rules)) {
-            return $rules;
+            return $this->flattenConditionalRules($rules);
         }
 
         return [$rules];
+    }
+
+    /**
+     * Flatten ConditionalRules into their resolved rules.
+     *
+     * @param  array<int, mixed>  $rules
+     * @return array<int, mixed>
+     */
+    private function flattenConditionalRules(array $rules): array
+    {
+        $flattened = [];
+
+        foreach ($rules as $rule) {
+            if ($rule instanceof \Illuminate\Validation\ConditionalRules) {
+                $innerRules = $this->resolveConditionalRules($rule);
+
+                foreach ($innerRules as $inner) {
+                    $flattened[] = $inner;
+                }
+            } else {
+                $flattened[] = $rule;
+            }
+        }
+
+        return $flattened;
+    }
+
+    /**
+     * Resolve a ConditionalRules instance to its default rules.
+     *
+     * @return array<int, mixed>
+     */
+    private function resolveConditionalRules(\Illuminate\Validation\ConditionalRules $rule): array
+    {
+        try {
+            $defaultRules = $rule->defaultRules();
+
+            if (is_string($defaultRules)) {
+                return explode('|', $defaultRules);
+            }
+
+            if (is_array($defaultRules)) {
+                return $defaultRules;
+            }
+
+            return [$defaultRules];
+        } catch (\Throwable) {
+            return [];
+        }
     }
 
     /**
