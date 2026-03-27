@@ -254,6 +254,19 @@ final class ValidationSchemaResolver
             }
 
             if (is_object($rule)) {
+                // Skip objects that can't be cast to string (e.g. ConditionalRules)
+                if (! method_exists($rule, '__toString')) {
+                    if ($rule instanceof \Illuminate\Validation\Rules\Enum) {
+                        $enumValues = $this->extractEnumValues($rule);
+
+                        if ($enumValues !== null) {
+                            return $enumValues;
+                        }
+                    }
+
+                    continue;
+                }
+
                 // Laravel Rule::in() → casts to "in:a,b,c"
                 $ruleString = (string) $rule;
 
